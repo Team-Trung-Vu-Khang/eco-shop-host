@@ -1,0 +1,481 @@
+@import "tailwindcss";
+
+@import "@Team-Trung-Vu-Khang/eco-shared-ui/index.css";
+
+/* ===== MEVI Brand Design System ===== */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+}
+
+:root {
+  /* Mevi Brand Colors - Warm, earthy, farmer-friendly */
+  --mevi-green-50: #ecfdf5;
+  --mevi-green-100: #d1fae5;
+  --mevi-green-200: #a7f3d0;
+  --mevi-green-300: #6ee7b7;
+  --mevi-green-400: #34d399;
+  --mevi-green-500: #10b981;
+  --mevi-green-600: #059669;
+  --mevi-green-700: #047857;
+  --mevi-green-800: #065f46;
+  --mevi-green-900: #064e3b;
+
+  --mevi-earth-50: #fefce8;
+  --mevi-earth-100: #fef9c3;
+  --mevi-earth-200: #fef08a;
+  --mevi-earth-300: #fde047;
+  --mevi-earth-400: #facc15;
+  --mevi-earth-500: #eab308;
+  --mevi-earth-600: #ca8a04;
+  --mevi-earth-700: #a16207;
+  --mevi-earth-800: #854d0e;
+  --mevi-earth-900: #713f12;
+
+  --mevi-warm-50: #fff7ed;
+  --mevi-warm-100: #ffedd5;
+  --mevi-warm-200: #fed7aa;
+  --mevi-warm-300: #fdba74;
+  --mevi-warm-400: #fb923c;
+
+  --mevi-sky-50: #f0f9ff;
+  --mevi-sky-100: #e0f2fe;
+  --mevi-sky-200: #bae6fd;
+
+  --mevi-cream: #fdfbf3;
+  --mevi-paper: #f8f5ec;
+  --mevi-text-primary: #1a3c2a;
+  --mevi-text-secondary: #4a6e5a;
+  --mevi-text-muted: #7a9a8a;
+  --mevi-border: #d4e5d8;
+  --mevi-shadow: rgba(6, 78, 59, 0.08);
+}
+
+/* ===== Animations ===== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes grow-line {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes leaf-sway {
+  0%, 100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-leaf-sway {
+  animation: leaf-sway 3s ease-in-out infinite;
+}
+
+.animate-grow-line {
+  animation: grow-line 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform-origin: left center;
+}
+
+/* Stagger delays */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
+.delay-800 { animation-delay: 0.8s; }
+
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* ===== Mevi Portal Styles ===== */
+
+.mevi-portal {
+  height: 100dvh;
+  background: linear-gradient(160deg, var(--mevi-cream) 0%, var(--mevi-green-50) 30%, var(--mevi-paper) 60%, var(--mevi-earth-50) 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.mevi-portal::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--mevi-green-100) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.mevi-portal::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -15%;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--mevi-earth-100) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* Login Card */
+.mevi-login-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 229, 216, 0.5);
+  border-radius: 24px;
+  box-shadow:
+    0 4px 6px -1px var(--mevi-shadow),
+    0 20px 40px -12px rgba(6, 78, 59, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.mevi-login-card:hover {
+  box-shadow:
+    0 4px 6px -1px var(--mevi-shadow),
+    0 24px 48px -12px rgba(6, 78, 59, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Module Cards */
+.mevi-module-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 229, 216, 0.4);
+  border-radius: 20px;
+  padding: 24px;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.mevi-module-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 20px 20px 0 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mevi-module-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px -8px rgba(6, 78, 59, 0.15);
+  border-color: rgba(212, 229, 216, 0.7);
+}
+
+.mevi-module-card:hover::before {
+  opacity: 1;
+}
+
+.mevi-module-card.farm::before {
+  background: linear-gradient(90deg, var(--mevi-green-400), var(--mevi-green-600));
+}
+.mevi-module-card.edu::before {
+  background: linear-gradient(90deg, #60a5fa, #3b82f6);
+}
+.mevi-module-card.factory::before {
+  background: linear-gradient(90deg, var(--mevi-warm-300), var(--mevi-warm-400));
+}
+.mevi-module-card.shop::before {
+  background: linear-gradient(90deg, #a78bfa, #8b5cf6);
+}
+
+/* Module Icon Container */
+.mevi-module-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: transform 0.3s ease;
+}
+
+.mevi-module-card:hover .mevi-module-icon {
+  transform: scale(1.1);
+}
+
+.mevi-module-icon.farm {
+  background: linear-gradient(135deg, var(--mevi-green-100), var(--mevi-green-200));
+  color: var(--mevi-green-700);
+}
+.mevi-module-icon.edu {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1d4ed8;
+}
+.mevi-module-icon.factory {
+  background: linear-gradient(135deg, var(--mevi-warm-100), var(--mevi-warm-200));
+  color: #c2410c;
+}
+.mevi-module-icon.shop {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  color: #7c3aed;
+}
+
+/* Connection Lines */
+.mevi-connection-hub {
+  position: relative;
+}
+
+.mevi-connection-line {
+  position: absolute;
+  background: linear-gradient(90deg, var(--mevi-green-200), var(--mevi-green-300));
+  height: 2px;
+  border-radius: 1px;
+}
+
+/* Input Styles */
+.mevi-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--mevi-border);
+  border-radius: 14px;
+  font-size: 15px;
+  color: var(--mevi-text-primary);
+  background: rgba(255, 255, 255, 0.8);
+  transition: all 0.25s ease;
+  outline: none;
+  font-family: inherit;
+}
+
+.mevi-input::placeholder {
+  color: var(--mevi-text-muted);
+}
+
+.mevi-input:focus {
+  border-color: var(--mevi-green-400);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+  background: rgba(255, 255, 255, 1);
+}
+
+.mevi-input:hover:not(:focus) {
+  border-color: var(--mevi-green-300);
+}
+
+/* Button */
+.mevi-btn-primary {
+  width: 100%;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--mevi-green-600), var(--mevi-green-700));
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+}
+
+.mevi-btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--mevi-green-500), var(--mevi-green-600));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mevi-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -4px rgba(5, 150, 105, 0.4);
+}
+
+.mevi-btn-primary:hover::after {
+  opacity: 1;
+}
+
+.mevi-btn-primary:active {
+  transform: translateY(0);
+}
+
+.mevi-btn-primary span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Chip / Badge */
+.mevi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--mevi-green-700);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Ecosystem connector */
+.mevi-ecosystem-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--mevi-green-50), var(--mevi-earth-50));
+  color: var(--mevi-green-800);
+  border: 1.5px solid var(--mevi-green-200);
+  letter-spacing: 0.02em;
+}
+
+/* Decorative elements */
+.mevi-leaf-decoration {
+  position: absolute;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mevi-login-card {
+    border-radius: 20px;
+    margin: 0 16px;
+  }
+
+  .mevi-module-card {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .mevi-module-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    font-size: 20px;
+  }
+}
