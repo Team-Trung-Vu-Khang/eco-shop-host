@@ -26,7 +26,7 @@ const modules = [
       "Hệ thống giáo dục trực tuyến, tài liệu kỹ thuật canh tác, hướng dẫn sử dụng phân bón và quy trình sản xuất.",
     icon: BookOpen,
     variant: "edu" as const,
-    href: "/edu",
+    href: "https://ceb.vn/",
     status: "Đang phát triển",
     dotColor: "bg-blue-400",
   },
@@ -131,7 +131,10 @@ export default function DashboardPage() {
       e.preventDefault();
       setToastMessage(null);
       setLoadingModuleId(mod.id);
-      router.push(mod.href);
+      setTimeout(() => {
+        setLoadingModuleId(null);
+        window.open(mod.href, "_blank", "noopener,noreferrer");
+      }, 1200);
     };
 
   return (

@@ -16,14 +16,6 @@ const nextConfig: NextConfig = {
         source: "/factory/:path*",
         destination: "http://localhost:3002/factory/:path*",
       },
-      {
-        source: "/edu",
-        destination: "https://eco-edu-app.vercel.app/edu",
-      },
-      {
-        source: "/edu/:path*",
-        destination: "https://eco-edu-app.vercel.app/edu/:path*",
-      },
     ];
   },
 };
