@@ -138,7 +138,7 @@ export default function DashboardPage() {
     };
 
   return (
-    <div className="mevi-portal">
+    <div className="mevi-portal relative flex min-h-dvh flex-col overflow-x-hidden overflow-y-auto">
       {loadingModuleId && (
         <div className="fixed inset-0 z-[120] flex flex-col items-center justify-center gap-4 bg-white/80 backdrop-blur-sm">
           <div
@@ -228,10 +228,10 @@ export default function DashboardPage() {
 
       {/* Top Nav */}
       <nav
-        className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5 opacity-0 animate-fade-in-up"
+        className="relative z-10 flex flex-col gap-4 px-4 py-5 opacity-0 animate-fade-in-up sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-12"
         style={{ animationFillMode: "forwards" }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-start sm:self-auto">
           <img
             src="/mevi-logo.jpeg"
             alt="MEVI Logo"
@@ -246,20 +246,20 @@ export default function DashboardPage() {
               MEVI
             </h1>
             <p
-              className="text-[11px] font-medium -mt-0.5"
+              className="text-[11px] font-medium leading-tight -mt-0.5"
               style={{ color: "var(--mevi-text-muted)" }}
             >
               Hệ sinh thái Nông nghiệp
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-4">
           <div
-            className="hidden sm:flex items-center gap-2 text-sm"
+            className="flex min-w-0 items-center gap-2 text-sm"
             style={{ color: "var(--mevi-text-secondary)" }}
           >
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
               style={{
                 background:
                   "linear-gradient(135deg, var(--mevi-green-500), var(--mevi-green-700))",
@@ -267,29 +267,29 @@ export default function DashboardPage() {
             >
               NV
             </div>
-            <span className="font-medium">Nguyễn Văn A</span>
+            <span className="truncate font-medium">Nguyễn Văn A</span>
           </div>
           <a
             href="/"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-red-50"
+            className="flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-red-50"
             style={{ color: "var(--mevi-text-muted)", textDecoration: "none" }}
             title="Đăng xuất"
           >
             <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Đăng xuất</span>
+            <span>Đăng xuất</span>
           </a>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="h-full z-10 flex flex-col items-center px-4 pt-4 pb-16 md:pt-8 md:pb-24">
+      <main className="relative z-10 flex w-full flex-1 flex-col items-center px-4 pb-10 pt-4 sm:px-6 md:px-8 md:pb-14 md:pt-8">
         {/* Section Header */}
         <div
-          className="text-center mb-10 opacity-0 animate-fade-in-up delay-100"
+          className="mb-8 text-center opacity-0 animate-fade-in-up delay-100 md:mb-10"
           style={{ animationFillMode: "forwards" }}
         >
           <h2
-            className="text-2xl md:text-3xl font-bold tracking-tight"
+            className="text-2xl font-bold tracking-tight md:text-3xl"
             style={{ color: "var(--mevi-text-primary)" }}
           >
             Hệ sinh thái MEVI
@@ -302,9 +302,39 @@ export default function DashboardPage() {
           </p>
         </div>
 
+        {/* Mobile Flow */}
+        <div
+          className="mb-8 flex w-full max-w-md flex-wrap items-center justify-center gap-x-3 gap-y-2 opacity-0 animate-fade-in-up delay-150 md:hidden"
+          style={{ animationFillMode: "forwards" }}
+        >
+          {modules.map((mod) => {
+            const Icon = mod.icon;
+            return (
+              <div
+                key={mod.id}
+                className="flex items-center gap-2 rounded-full px-3 py-2"
+                style={{
+                  background: "rgba(255,255,255,0.58)",
+                  border: "1px solid rgba(212, 229, 216, 0.7)",
+                }}
+              >
+                <div className={`mevi-module-icon ${mod.variant} !h-9 !w-9 !rounded-xl`}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <span
+                  className="text-xs font-semibold"
+                  style={{ color: "var(--mevi-text-secondary)" }}
+                >
+                  {mod.name.replace("Mevi ", "")}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Connection Flow Visualization */}
         <div
-          className="hidden md:flex items-center justify-center mb-10 opacity-0 animate-fade-in-up delay-200 w-full max-w-3xl"
+          className="mb-10 hidden w-full max-w-3xl items-center justify-center opacity-0 animate-fade-in-up delay-200 md:flex"
           style={{ animationFillMode: "forwards" }}
         >
           <div className="flex items-center justify-center w-full">
@@ -355,7 +385,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Module Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full max-w-5xl px-4 md:px-0">
+        <div className="grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
           {modules.map((mod, i) => {
             const Icon = mod.icon;
             const isActive = mod.status === "Hoạt động";
@@ -372,12 +402,12 @@ export default function DashboardPage() {
                 }}
               >
                 {/* Card Header */}
-                <div className="flex items-start justify-between mb-4">
+                <div className="mb-4 flex items-start justify-between gap-3">
                   <div className={`mevi-module-icon ${mod.variant}`}>
                     <Icon className="w-6 h-6" />
                   </div>
                   <span
-                    className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
+                    className="rounded-full px-2.5 py-1 text-[10px] font-semibold text-right"
                     style={{
                       background: isActive
                         ? "rgba(16, 185, 129, 0.1)"
@@ -416,7 +446,7 @@ export default function DashboardPage() {
 
                 {/* Card Footer */}
                 <div
-                  className="flex items-center gap-1.5 text-sm font-semibold transition-all duration-300 group-hover:gap-3"
+                  className="mt-auto flex items-center gap-1.5 text-sm font-semibold transition-all duration-300 group-hover:gap-3"
                   style={{ color: "var(--mevi-green-600)" }}
                 >
                   <span>Truy cập</span>
@@ -430,7 +460,7 @@ export default function DashboardPage() {
 
       {/* Footer */}
       <footer
-        className="absolute w-full bottom-0 z-10 text-center py-8 px-4"
+        className="relative z-10 mt-auto w-full px-4 py-6 text-center sm:py-8"
         style={{
           borderTop: "1px solid var(--mevi-border)",
           background: "rgba(255,255,255,0.3)",
@@ -449,7 +479,10 @@ export default function DashboardPage() {
             MEVI
           </span>
         </div>
-        <p className="text-xs" style={{ color: "var(--mevi-text-muted)" }}>
+        <p
+          className="mx-auto max-w-md text-xs leading-relaxed sm:max-w-none"
+          style={{ color: "var(--mevi-text-muted)" }}
+        >
           © 2026 MEVI — Hệ sinh thái Nông nghiệp thông minh. Tất cả quyền được
           bảo lưu.
         </p>

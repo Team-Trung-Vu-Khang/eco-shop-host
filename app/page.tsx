@@ -87,7 +87,7 @@ function DecorativeLeaves() {
 function EcosystemFlowMini() {
   return (
     <div
-      className="flex items-center justify-center gap-2 py-3 opacity-0 animate-fade-in-up delay-500"
+      className="flex flex-wrap items-center justify-center gap-x-2 gap-y-2 py-3 opacity-0 animate-fade-in-up delay-500"
       style={{ animationFillMode: "forwards" }}
     >
       {modules.map((mod, i) => (
@@ -103,7 +103,7 @@ function EcosystemFlowMini() {
           </div>
           {i < modules.length - 1 && (
             <div
-              className="w-4 h-px bg-gradient-to-r from-green-300 to-green-200 animate-grow-line"
+              className="hidden sm:block w-4 h-px bg-gradient-to-r from-green-300 to-green-200 animate-grow-line"
               style={{
                 animationDelay: `${0.6 + i * 0.1}s`,
                 animationFillMode: "forwards",
@@ -135,15 +135,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mevi-portal">
+    <div className="mevi-portal relative flex min-h-dvh flex-col overflow-x-hidden overflow-y-auto">
       <DecorativeLeaves />
 
       {/* Top Nav */}
       <nav
-        className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5 opacity-0 animate-fade-in-up"
+        className="relative z-10 flex flex-col gap-4 px-4 py-5 opacity-0 animate-fade-in-up sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-12"
         style={{ animationFillMode: "forwards" }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-start sm:self-auto">
           <img
             src="/mevi-logo.jpeg"
             alt="MEVI Logo"
@@ -158,23 +158,23 @@ export default function LoginPage() {
               MEVI
             </h1>
             <p
-              className="text-[11px] font-medium -mt-0.5"
+              className="text-[11px] font-medium leading-tight -mt-0.5"
               style={{ color: "var(--mevi-text-muted)" }}
             >
               Hệ sinh thái Nông nghiệp
             </p>
           </div>
         </div>
-        <div className="mevi-badge hidden sm:flex">
+        <div className="mevi-badge hidden sm:flex sm:self-auto">
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>Nền tảng bảo mật</span>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 -mt-12">
+      <main className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 pb-10 pt-2 sm:px-6 sm:pb-12 md:px-8 md:pt-4">
         {/* Hero */}
-        <div className="text-center mb-6 max-w-2xl">
+        <div className="mb-6 max-w-2xl text-center md:mb-8">
           <div
             className="opacity-0 animate-fade-in-up delay-100"
             style={{ animationFillMode: "forwards" }}
@@ -186,7 +186,7 @@ export default function LoginPage() {
           </div>
 
           <h2
-            className="text-2xl md:text-4xl font-extrabold tracking-tight leading-tight opacity-0 animate-fade-in-up delay-200"
+            className="text-2xl font-extrabold leading-tight tracking-tight opacity-0 animate-fade-in-up delay-200 sm:text-3xl md:text-4xl"
             style={{
               color: "var(--mevi-text-primary)",
               animationFillMode: "forwards",
@@ -210,7 +210,7 @@ export default function LoginPage() {
 
         {/* Login Card */}
         <div
-          className="mevi-login-card w-full max-w-sm p-6 md:p-8 opacity-0 animate-fade-in-scale delay-300"
+          className="mevi-login-card w-full max-w-sm p-5 opacity-0 animate-fade-in-scale delay-300 sm:p-6 md:p-8"
           style={{ animationFillMode: "forwards" }}
         >
           <div className="text-center mb-6">
@@ -345,7 +345,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <footer
-        className="absolute bottom-0 w-full z-10 text-center py-8 px-4"
+        className="relative z-10 mt-auto w-full px-4 py-6 text-center sm:py-8"
         style={{
           borderTop: "1px solid var(--mevi-border)",
           background: "rgba(255,255,255,0.3)",
@@ -364,7 +364,10 @@ export default function LoginPage() {
             MEVI
           </span>
         </div>
-        <p className="text-xs" style={{ color: "var(--mevi-text-muted)" }}>
+        <p
+          className="mx-auto max-w-md text-xs leading-relaxed sm:max-w-none"
+          style={{ color: "var(--mevi-text-muted)" }}
+        >
           © 2026 MEVI — Hệ sinh thái Nông nghiệp thông minh. Tất cả quyền được
           bảo lưu.
         </p>
