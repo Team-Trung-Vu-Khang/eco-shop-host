@@ -119,8 +119,8 @@ function EcosystemFlowMini() {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("mevi@gmail.com");
+  const [password, setPassword] = useState("Admin1234!");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -129,6 +129,9 @@ export default function LoginPage() {
     // Simulate login then redirect to dashboard
     setTimeout(() => {
       setIsLoggingIn(false);
+      window.sessionStorage.setItem("mevi_user_email", email);
+      window.sessionStorage.setItem("mevi_user_name", "Tài khoản quản trị MEVI");
+      window.sessionStorage.setItem("mevi_show_welcome_survey", "true");
       router.push("/dashboard");
     }, 1200);
   };

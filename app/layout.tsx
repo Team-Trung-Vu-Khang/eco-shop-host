@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "MEVI — Hệ sinh thái Nông nghiệp thông minh",
@@ -31,7 +32,7 @@ export default function RootLayout({
         />
       </head>
       <body style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

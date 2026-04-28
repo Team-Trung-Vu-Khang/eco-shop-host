@@ -8,8 +8,11 @@ import {
   ArrowRight,
   LogOut,
   Loader2,
+  NotebookPen,
+  ShieldCheck,
   X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 /* ===== Module Data ===== */
@@ -24,7 +27,7 @@ const modules = [
     icon: BookOpen,
     variant: "edu" as const,
     href: "https://ceb.vn/",
-    status: "Đang phát triển",
+    status: "Hoạt động",
     dotColor: "bg-blue-400",
   },
   {
@@ -101,8 +104,16 @@ function DecorativeLeaves() {
 /* ===== Dashboard Page ===== */
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [loadingModuleId, setLoadingModuleId] = useState<string | null>(null);
+  const [surveyPrompt, setSurveyPrompt] = useState<{
+    surveyId: number;
+    title: string;
+    message: string;
+    confirmLabel: string;
+    nextHref?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!toastMessage) return;
@@ -114,23 +125,63 @@ export default function DashboardPage() {
     return () => window.clearTimeout(timer);
   }, [toastMessage]);
 
+  useEffect(() => {
+    const shouldShowWelcomeSurvey =
+      window.sessionStorage.getItem("mevi_show_welcome_survey") === "true";
+
+    if (!shouldShowWelcomeSurvey) return;
+
+    window.sessionStorage.removeItem("mevi_show_welcome_survey");
+    setSurveyPrompt({
+      surveyId: 396,
+      title: "Mời bà con làm bài khảo sát ngắn",
+      message:
+        "Để MEVI phục vụ bà con tốt hơn, mời bà con dành ít phút chia sẻ ý kiến sau khi đăng nhập. Bài khảo sát ngắn, câu hỏi dễ trả lời và chỉ thực hiện một lần.",
+      confirmLabel: "Bắt đầu khảo sát",
+    });
+  }, []);
+
+  const openSurvey = () => {
+    if (!surveyPrompt) return;
+
+    const params = new URLSearchParams({
+      surveyId: String(surveyPrompt.surveyId),
+      source: surveyPrompt.nextHref ? "module" : "login",
+      returnTo: "/dashboard",
+    });
+
+    if (surveyPrompt.nextHref) {
+      params.set("nextHref", surveyPrompt.nextHref);
+    }
+
+    router.push(`/survey?${params.toString()}`);
+  };
+
   const handleModuleClick =
     (mod: (typeof modules)[number]) =>
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       if (mod.id === "factory" || mod.id === "shop") {
         e.preventDefault();
         setLoadingModuleId(null);
-        setToastMessage(`${mod.name} hiện đang được phát triển.`);
+        setToastMessage(
+          `${mod.name} đang được hoàn thiện. Khi sẵn sàng, MEVI sẽ thông báo để bà con vào sử dụng thuận tiện hơn.`,
+        );
         return;
       }
 
       e.preventDefault();
       setToastMessage(null);
-      setLoadingModuleId(mod.id);
-      setTimeout(() => {
-        setLoadingModuleId(null);
-        window.open(mod.href, "_blank", "noopener,noreferrer");
-      }, 1200);
+      setLoadingModuleId(null);
+      setSurveyPrompt({
+        surveyId: mod.id === "farm" ? 397 : 396,
+        title: `Trước khi vào ${mod.name}, mời bà con làm khảo sát ngắn`,
+        message:
+          mod.id === "farm"
+            ? "Bài khảo sát này giúp MEVI Farm sắp xếp nội dung phù hợp với nhu cầu canh tác thực tế của bà con."
+            : "Bài khảo sát này giúp MEVI hiểu rõ nhu cầu học tập và hướng dẫn kỹ thuật để hỗ trợ bà con dễ dàng hơn.",
+        confirmLabel: "Vào làm khảo sát",
+        nextHref: mod.href,
+      });
     };
 
   return (
@@ -214,6 +265,87 @@ export default function DashboardPage() {
                   className="h-4 w-4"
                   style={{ color: "var(--mevi-text-muted)" }}
                 />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {surveyPrompt && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/25 px-4 backdrop-blur-sm">
+          <div
+            className="w-full max-w-md rounded-[28px] p-6 shadow-2xl"
+            style={{
+              background: "rgba(255, 255, 255, 0.96)",
+              border: "1px solid rgba(212, 229, 216, 0.95)",
+            }}
+          >
+            <div className="flex items-start gap-4">
+              <div
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+                style={{
+                  background:
+                    "linear-gradient(135deg, var(--mevi-green-100), var(--mevi-green-200))",
+                  color: "var(--mevi-green-700)",
+                }}
+              >
+                <NotebookPen className="h-6 w-6" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p
+                  className="text-lg font-bold leading-7"
+                  style={{ color: "var(--mevi-text-primary)" }}
+                >
+                  {surveyPrompt.title}
+                </p>
+                <p
+                  className="mt-2 text-sm leading-6"
+                  style={{ color: "var(--mevi-text-secondary)" }}
+                >
+                  {surveyPrompt.message}
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="mt-5 flex items-start gap-3 rounded-2xl px-4 py-3"
+              style={{
+                background: "rgba(236, 253, 245, 0.9)",
+                border: "1px solid rgba(167, 243, 208, 0.9)",
+              }}
+            >
+              <ShieldCheck
+                className="mt-0.5 h-4 w-4 shrink-0"
+                style={{ color: "var(--mevi-green-700)" }}
+              />
+              <p
+                className="text-sm leading-6"
+                style={{ color: "var(--mevi-text-secondary)" }}
+              >
+                Bài khảo sát ngắn gọn, dễ hiểu và giúp MEVI phục vụ bà con sát
+                thực tế hơn.
+              </p>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setSurveyPrompt(null)}
+                className="rounded-2xl px-4 py-3 text-sm font-semibold"
+                style={{
+                  color: "var(--mevi-text-secondary)",
+                  background: "rgba(248, 250, 252, 0.9)",
+                  border: "1px solid rgba(212, 229, 216, 0.9)",
+                }}
+              >
+                Để sau
+              </button>
+              <button
+                type="button"
+                onClick={openSurvey}
+                className="mevi-btn-primary w-auto px-5"
+              >
+                <span>{surveyPrompt.confirmLabel}</span>
               </button>
             </div>
           </div>
