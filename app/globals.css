@@ -190,16 +190,16 @@ html {
   padding: 0;
   width: 100%;
   overflow-x: hidden;
-  overflow-y: hidden;
+  min-height: 100%;
 }
 
 body {
   margin: 0;
   padding: 0;
   width: 100%;
-  min-height: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 /* ===== Mevi Portal Styles ===== */
@@ -245,7 +245,7 @@ body {
   border-radius: 24px;
   box-shadow:
     0 4px 6px -1px var(--mevi-shadow),
-    0 20px 40px -12px rgba(6, 78, 59, 0.12),
+    0 16px 32px -14px rgba(6, 78, 59, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
@@ -354,10 +354,10 @@ body {
 /* Input Styles */
 .mevi-input {
   width: 100%;
-  padding: 14px 16px;
+  padding: 11px 14px;
   border: 1.5px solid var(--mevi-border);
-  border-radius: 14px;
-  font-size: 15px;
+  border-radius: 12px;
+  font-size: 14px;
   color: var(--mevi-text-primary);
   background: rgba(255, 255, 255, 0.8);
   transition: all 0.25s ease;
@@ -382,10 +382,10 @@ body {
 /* Button */
 .mevi-btn-primary {
   width: 100%;
-  padding: 14px 24px;
+  padding: 11px 18px;
   border: none;
-  border-radius: 14px;
-  font-size: 16px;
+  border-radius: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: white;
   background: linear-gradient(135deg, var(--mevi-green-600), var(--mevi-green-700));
@@ -443,14 +443,26 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 20px;
+  padding: 6px 14px;
   border-radius: 100px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   background: linear-gradient(135deg, var(--mevi-green-50), var(--mevi-earth-50));
   color: var(--mevi-green-800);
   border: 1.5px solid var(--mevi-green-200);
   letter-spacing: 0.02em;
+}
+
+.mevi-desktop-shell {
+  gap: 0.5rem;
+}
+
+.mevi-desktop-card {
+  width: min(100%, 22rem);
+}
+
+.mevi-desktop-footer {
+  flex-shrink: 0;
 }
 
 /* Decorative elements */
@@ -461,21 +473,95 @@ body {
 }
 
 /* Responsive */
+@media (min-width: 768px) {
+  .mevi-desktop-shell {
+    transform-origin: center top;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 980px) {
+  .mevi-desktop-shell {
+    transform: scale(0.94);
+  }
+
+  .mevi-desktop-footer {
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 860px) {
+  .mevi-desktop-shell {
+    transform: scale(0.88);
+  }
+
+  .mevi-login-card {
+    border-radius: 22px;
+  }
+
+  .mevi-input {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .mevi-btn-primary {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .mevi-desktop-footer {
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+  }
+}
+
 @media (max-width: 768px) {
+  .mevi-portal::before {
+    right: -55%;
+    top: -32%;
+    width: 320px;
+    height: 320px;
+  }
+
+  .mevi-portal::after {
+    left: -48%;
+    bottom: -22%;
+    width: 240px;
+    height: 240px;
+  }
+
   .mevi-login-card {
     border-radius: 20px;
-    margin: 0 16px;
+    margin: 0;
   }
 
-  .mevi-module-card {
-    padding: 20px;
-    border-radius: 16px;
+  .mevi-input {
+    padding: 11px 14px;
+    font-size: 15px;
   }
 
-  .mevi-module-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    font-size: 20px;
+  .mevi-btn-primary {
+    padding: 11px 18px;
+    font-size: 14px;
+  }
+
+  .mevi-ecosystem-badge {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .mevi-login-card {
+    border-radius: 18px;
+  }
+
+  .mevi-ecosystem-badge {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mevi-btn-primary {
+    padding: 10px 16px;
   }
 }
