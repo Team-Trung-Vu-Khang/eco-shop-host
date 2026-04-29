@@ -26,7 +26,7 @@ const modules = [
       "Hệ thống giáo dục trực tuyến, tài liệu kỹ thuật canh tác, hướng dẫn sử dụng phân bón và quy trình sản xuất.",
     icon: BookOpen,
     variant: "edu" as const,
-    href: "https://ceb.vn/",
+    href: "https://mevi.edtexco.vn",
     status: "Hoạt động",
     dotColor: "bg-blue-400",
   },
@@ -144,14 +144,17 @@ export default function DashboardPage() {
   const openSurvey = () => {
     if (!surveyPrompt) return;
 
+    const currentPrompt = surveyPrompt;
+    setSurveyPrompt(null);
+
     const params = new URLSearchParams({
-      surveyId: String(surveyPrompt.surveyId),
-      source: surveyPrompt.nextHref ? "module" : "login",
+      surveyId: String(currentPrompt.surveyId),
+      source: currentPrompt.nextHref ? "module" : "login",
       returnTo: "/dashboard",
     });
 
-    if (surveyPrompt.nextHref) {
-      params.set("nextHref", surveyPrompt.nextHref);
+    if (currentPrompt.nextHref) {
+      params.set("nextHref", currentPrompt.nextHref);
     }
 
     router.push(`/survey?${params.toString()}`);
