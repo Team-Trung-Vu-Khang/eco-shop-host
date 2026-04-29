@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   Sprout,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -126,7 +127,6 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
-    // Simulate login then redirect to dashboard
     setTimeout(() => {
       setIsLoggingIn(false);
       window.sessionStorage.setItem("mevi_user_email", email);
@@ -140,7 +140,6 @@ export default function LoginPage() {
     <div className="mevi-portal relative flex h-dvh flex-col overflow-hidden">
       <DecorativeLeaves />
 
-      {/* Top Nav */}
       <nav
         className="relative z-10 flex items-center justify-between gap-3 px-4 py-4 opacity-0 animate-fade-in-up sm:px-6 md:px-10"
         style={{ animationFillMode: "forwards" }}
@@ -173,7 +172,6 @@ export default function LoginPage() {
         </div>
       </nav>
 
-      {/* Main Content */}
       <main className="relative z-10 flex min-h-0 w-full flex-1 items-center justify-center px-4 pb-4 pt-1 sm:px-6 md:justify-start md:px-8 md:pt-2">
         <div className="w-full md:hidden">
           <div className="mx-auto w-full max-w-[22rem]">
@@ -304,6 +302,20 @@ export default function LoginPage() {
                     </span>
                   </button>
                 </div>
+
+                <p
+                  className="text-center text-sm"
+                  style={{ color: "var(--mevi-text-secondary)" }}
+                >
+                  Bạn đã có tài khoản chưa?{" "}
+                  <Link
+                    href="/register"
+                    className="font-semibold underline-offset-2 hover:underline"
+                    style={{ color: "var(--mevi-green-700)" }}
+                  >
+                    Đăng ký
+                  </Link>
+                </p>
 
                 <div className="pt-1">
                   <EcosystemFlowMini />
@@ -475,6 +487,20 @@ export default function LoginPage() {
                     </span>
                   </button>
                 </div>
+
+                <p
+                  className="text-center text-sm"
+                  style={{ color: "var(--mevi-text-secondary)" }}
+                >
+                  Bạn đã có tài khoản chưa?{" "}
+                  <Link
+                    href="/register"
+                    className="font-semibold underline-offset-2 hover:underline"
+                    style={{ color: "var(--mevi-green-700)" }}
+                  >
+                    Đăng ký
+                  </Link>
+                </p>
               </form>
             </div>
           </div>
@@ -502,7 +528,7 @@ export default function LoginPage() {
           </span>
         </div>
         <p
-          className="mx-auto max-w-md text-xs leading-relaxed sm:max-w-none"
+          className="mx-auto max-w-md whitespace-nowrap text-xs leading-relaxed sm:max-w-none"
           style={{ color: "var(--mevi-text-muted)" }}
         >
           © 2026 MEVI — Hệ sinh thái Nông nghiệp thông minh. Tất cả quyền được
