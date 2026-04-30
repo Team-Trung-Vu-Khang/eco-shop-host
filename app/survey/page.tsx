@@ -4,347 +4,31 @@ import { useMutation } from "@tanstack/react-query";
 import {
   ArrowLeft,
   ArrowRight,
-  BookText,
   CheckCircle2,
-  CircleDot,
-  Factory,
   Loader2,
-  MessageSquareQuote,
-  ShoppingBag,
-  ShieldCheck,
-  SlidersHorizontal,
-  Sprout,
-  SquareCheckBig,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { MeviPortalFooter } from "@/components/mevi-portal-footer";
-import { MeviPortalHeader } from "@/components/mevi-portal-header";
+import { DecorativeLeaves } from "./components/decorative-leaves";
+import { SurveyPortalHeader } from "./components/survey-portal-header";
+import { SurveySuccessModal } from "./components/survey-success-modal";
+import {
+  GENERAL_SURVEY_ID,
+  INTRO_USER_QUESTION_ID,
+  demoSurveyDetails,
+  introQuestions,
+  questionTypeMeta,
+  surveyTypes,
+} from "./data";
+import { optionIsSelected } from "./utils";
 import {
   type SurveyAnswerValue,
-  type SurveyOption,
   type SurveyQuestion,
-  type SurveyQuestionType,
   type SurveyResultDetails,
   getDefaultAnswer,
   isAnswered,
 } from "@/lib/survey";
-
-type SurveyTypeMeta = {
-  id: number;
-  key: "general" | "farm" | "factory" | "shop";
-  name: string;
-  description: string;
-  icon: typeof BookText;
-  accent: string;
-  softAccent: string;
-};
-
-const surveyTypes: SurveyTypeMeta[] = [
-  {
-    id: 396,
-    key: "general",
-    name: "Khảo sát chung",
-    description: "Ghi nhận ý kiến chung để MEVI hỗ trợ bà con rõ ràng hơn.",
-    icon: BookText,
-    accent: "var(--mevi-green-700)",
-    softAccent: "rgba(16, 185, 129, 0.12)",
-  },
-  {
-    id: 397,
-    key: "farm",
-    name: "MEVI FARM",
-    description: "Phù hợp với nhu cầu canh tác, theo dõi mùa vụ và nông trại.",
-    icon: Sprout,
-    accent: "#15803d",
-    softAccent: "rgba(34, 197, 94, 0.12)",
-  },
-  {
-    id: 398,
-    key: "factory",
-    name: "MEVI FACTORY",
-    description:
-      "Phù hợp với quy trình sơ chế, chế biến và kiểm soát chất lượng.",
-    icon: Factory,
-    accent: "#c2410c",
-    softAccent: "rgba(249, 115, 22, 0.12)",
-  },
-  {
-    id: 399,
-    key: "shop",
-    name: "MEVI SHOP",
-    description:
-      "Phù hợp với nhu cầu bán hàng, chăm sóc khách hàng và vận hành.",
-    icon: ShoppingBag,
-    accent: "#7c3aed",
-    softAccent: "rgba(168, 85, 247, 0.12)",
-  },
-];
-
-const GENERAL_SURVEY_ID = 396;
-const INTRO_USER_QUESTION_ID = 8001;
-
-const introQuestions: SurveyQuestion[] = [
-  {
-    id: INTRO_USER_QUESTION_ID,
-    code: "INTRO-USER",
-    content: "Bạn muốn giải quyết vấn đề nào nhất khi tham gia App MEVI?",
-    helperText:
-      "Bạn có thể chọn nhiều mục phù hợp nhất với nhu cầu hiện tại của mình.",
-    type: "multiple_choice",
-    source: "demo",
-    options: surveyTypes.map((survey) => ({
-      id: survey.id,
-      label: survey.name,
-      description: survey.description,
-    })),
-  },
-];
-
-function createDemoQuestion(
-  surveyPeriodId: number,
-  index: number,
-  question: Omit<SurveyQuestion, "id" | "source">,
-): SurveyQuestion {
-  return {
-    ...question,
-    id: surveyPeriodId * 100 + index + 1,
-    source: "demo",
-  };
-}
-
-const demoSurveyDetails: Record<number, SurveyResultDetails> = {
-  396: {
-    id: 396,
-    userCode: "MEVI-DEMO",
-    userName: "Người dùng demo",
-    positionName: "Khảo sát chung",
-    departmentName: "MEVI",
-    email: "mevi@gmail.com",
-    surveyPeriodId: 396,
-    surveyPeriodName: "Khảo sát chung",
-    resultQuestions: [
-      createDemoQuestion(396, 0, {
-        code: "GEN-001",
-        content: "Bạn đang quan tâm nhất đến trải nghiệm nào khi dùng MEVI?",
-        helperText: "Đây là câu demo để test flow khảo sát chung.",
-        type: "single_choice",
-        required: true,
-        options: [
-          { id: 1, label: "Tìm thông tin nhanh" },
-          { id: 2, label: "Theo dõi quy trình" },
-          { id: 3, label: "Quản lý công việc" },
-          { id: 4, label: "Kết nối kênh bán hàng" },
-        ],
-      }),
-      createDemoQuestion(396, 1, {
-        code: "GEN-002",
-        content: "Bạn muốn MEVI hỗ trợ bạn tốt hơn ở điểm nào?",
-        helperText: "Chọn nhiều ý phù hợp nhất với nhu cầu của bạn.",
-        type: "multiple_choice",
-        required: true,
-        options: [
-          { id: 1, label: "Giao diện dễ dùng" },
-          { id: 2, label: "Nội dung ngắn gọn" },
-          { id: 3, label: "Báo cáo rõ ràng" },
-          { id: 4, label: "Có hướng dẫn chi tiết" },
-        ],
-      }),
-      createDemoQuestion(396, 2, {
-        code: "GEN-003",
-        content: "Bạn có góp ý nào thêm cho khảo sát chung không?",
-        helperText: "Đây là ô tự luận demo.",
-        type: "essay",
-        required: false,
-      }),
-    ],
-  },
-  397: {
-    id: 397,
-    userCode: "FARM-DEMO",
-    userName: "Bà con demo Farm",
-    positionName: "MEVI FARM",
-    departmentName: "Nông trại",
-    email: "mevi@gmail.com",
-    surveyPeriodId: 397,
-    surveyPeriodName: "MEVI FARM",
-    resultQuestions: [
-      createDemoQuestion(397, 0, {
-        code: "FARM-001",
-        content: "MEVI FARM giúp bạn ở khâu nào nhiều nhất?",
-        helperText: "Câu demo cho phân hệ Farm.",
-        type: "multiple_choice",
-        required: true,
-        options: [
-          { id: 1, label: "Nhật ký sản xuất" },
-          { id: 2, label: "Quản lý vật tư" },
-          { id: 3, label: "Theo dõi mùa vụ" },
-          { id: 4, label: "Truy xuất nguồn gốc" },
-        ],
-      }),
-      createDemoQuestion(397, 1, {
-        code: "FARM-002",
-        content: "Mức độ dễ sử dụng của Farm hiện tại thế nào?",
-        helperText: "Dữ liệu demo theo dạng rating.",
-        type: "rating",
-        required: true,
-        options: [
-          { id: 1, label: "1" },
-          { id: 2, label: "2" },
-          { id: 3, label: "3" },
-          { id: 4, label: "4" },
-          { id: 5, label: "5" },
-        ],
-        ratingMinLabel: "Khó dùng",
-        ratingMaxLabel: "Rất dễ dùng",
-      }),
-      createDemoQuestion(397, 2, {
-        code: "FARM-003",
-        content: "Bạn muốn thêm tính năng nào cho Farm?",
-        helperText: "Ô tự luận để test flow.",
-        type: "essay",
-        required: false,
-      }),
-    ],
-  },
-  398: {
-    id: 398,
-    userCode: "FACTORY-DEMO",
-    userName: "Bà con demo Factory",
-    positionName: "MEVI FACTORY",
-    departmentName: "Nhà máy",
-    email: "mevi@gmail.com",
-    surveyPeriodId: 398,
-    surveyPeriodName: "MEVI FACTORY",
-    resultQuestions: [
-      createDemoQuestion(398, 0, {
-        code: "FAC-001",
-        content: "Factory đang giúp bạn tối ưu phần nào?",
-        helperText: "Chọn một đáp án demo.",
-        type: "single_choice",
-        required: true,
-        options: [
-          { id: 1, label: "Kiểm soát nguyên liệu" },
-          { id: 2, label: "Quản lý sản xuất" },
-          { id: 3, label: "Theo dõi chất lượng" },
-          { id: 4, label: "Xuất kho thành phẩm" },
-        ],
-      }),
-      createDemoQuestion(398, 1, {
-        code: "FAC-002",
-        content: "Bạn quan tâm nhóm tính năng nào của Factory?",
-        helperText: "Chọn nhiều mục để test checkbox.",
-        type: "multiple_choice",
-        required: true,
-        options: [
-          { id: 1, label: "Quy trình sản xuất" },
-          { id: 2, label: "Kiểm định chất lượng" },
-          { id: 3, label: "Tối ưu công suất" },
-          { id: 4, label: "Báo cáo tồn kho" },
-        ],
-      }),
-      createDemoQuestion(398, 2, {
-        code: "FAC-003",
-        content: "Factory cần cải thiện gì trước tiên?",
-        helperText: "Ô demo tự luận.",
-        type: "essay",
-        required: false,
-      }),
-    ],
-  },
-  399: {
-    id: 399,
-    userCode: "SHOP-DEMO",
-    userName: "Bà con demo Shop",
-    positionName: "MEVI SHOP",
-    departmentName: "Bán hàng",
-    email: "mevi@gmail.com",
-    surveyPeriodId: 399,
-    surveyPeriodName: "MEVI SHOP",
-    resultQuestions: [
-      createDemoQuestion(399, 0, {
-        code: "SHOP-001",
-        content: "Shop giúp bạn tốt nhất ở điểm nào?",
-        helperText: "Câu demo cho phân hệ Shop.",
-        type: "multiple_choice",
-        required: true,
-        options: [
-          { id: 1, label: "Đa kênh bán hàng" },
-          { id: 2, label: "Quản lý đơn hàng" },
-          { id: 3, label: "Chăm sóc khách hàng" },
-          { id: 4, label: "Theo dõi doanh thu" },
-        ],
-      }),
-      createDemoQuestion(399, 1, {
-        code: "SHOP-002",
-        content: "Mức độ sẵn sàng sử dụng Shop của bạn thế nào?",
-        helperText: "Đây là dạng yes/no demo.",
-        type: "yes_no",
-        required: true,
-        options: [
-          { id: 1, label: "Có" },
-          { id: 0, label: "Chưa" },
-        ],
-      }),
-      createDemoQuestion(399, 2, {
-        code: "SHOP-003",
-        content: "Bạn mong muốn Shop thêm điều gì?",
-        helperText: "Ô tự luận để kết thúc phần demo.",
-        type: "essay",
-        required: false,
-      }),
-    ],
-  },
-};
-
-const questionTypeMeta: Record<
-  SurveyQuestionType,
-  { label: string; icon: typeof MessageSquareQuote }
-> = {
-  essay: { label: "Tự luận", icon: MessageSquareQuote },
-  single_choice: { label: "Chọn 1", icon: CircleDot },
-  multiple_choice: { label: "Chọn nhiều", icon: SquareCheckBig },
-  rating: { label: "Thang điểm", icon: SlidersHorizontal },
-  yes_no: { label: "Có / Không", icon: CheckCircle2 },
-};
-
-function DecorativeLeaves() {
-  return (
-    <div
-      className="pointer-events-none absolute inset-0 overflow-hidden"
-      aria-hidden="true"
-    >
-      <svg
-        className="absolute -right-12 -top-6 h-64 w-64 opacity-[0.04] animate-leaf-sway"
-        viewBox="0 0 200 200"
-      >
-        <path
-          d="M120 20 C160 40, 180 80, 170 130 C160 160, 130 180, 90 170 C60 160, 40 130, 50 90 C55 60, 80 30, 120 20Z"
-          fill="currentColor"
-          className="text-green-700"
-        />
-      </svg>
-      <svg
-        className="absolute -bottom-10 -left-16 h-52 w-52 opacity-[0.03]"
-        viewBox="0 0 200 200"
-        style={{ animation: "leaf-sway 4s ease-in-out infinite 1.5s" }}
-      >
-        <path
-          d="M40 160 C20 120, 30 70, 70 40 C100 20, 140 30, 160 60 C170 80, 165 110, 140 130 C110 155, 70 170, 40 160Z"
-          fill="currentColor"
-          className="text-green-600"
-        />
-      </svg>
-    </div>
-  );
-}
-
-function optionIsSelected(value: SurveyAnswerValue, option: SurveyOption) {
-  if (Array.isArray(value)) return value.includes(option.id);
-  if (typeof value === "number") return value === option.id;
-  if (typeof value === "boolean") return Number(value) === option.id;
-  return false;
-}
 
 type SurveyQuestionWithMeta = SurveyQuestion & {
   surveyPeriodId?: number;
@@ -545,101 +229,22 @@ function SurveyPageContent() {
     <div className="mevi-portal relative flex h-dvh flex-col overflow-hidden">
       <DecorativeLeaves />
       <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto pb-28 sm:pb-32">
-        <MeviPortalHeader
-          badgeLabel={portalTitle}
-          className="flex flex-col gap-3 px-3 py-3 opacity-0 animate-fade-in-up sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 md:px-12"
-          style={{ animationFillMode: "forwards" }}
-          rightSlotClassName="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-4"
-          rightSlot={
-            <>
-              <div
-                className="hidden min-w-0 items-center gap-2 text-sm sm:flex"
-                style={{ color: "var(--mevi-text-secondary)" }}
-              >
-                <div
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, var(--mevi-green-500), var(--mevi-green-700))",
-                  }}
-                >
-                  <ShieldCheck className="h-4 w-4" />
-                </div>
-                <span className="truncate font-medium">Khảo sát MEVI</span>
-              </div>
+        <SurveyPortalHeader title={portalTitle} accent={currentSurvey.accent} />
 
-              <div
-                className="flex shrink-0 items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold"
-                style={{
-                  color: currentSurvey.accent,
-                  background: "rgba(255, 255, 255, 0.78)",
-                  border: "1px solid rgba(212, 229, 216, 0.9)",
-                }}
-              >
-                <ShieldCheck className="h-3.5 w-3.5" />
-                <span className="truncate">{portalTitle}</span>
-              </div>
-            </>
-          }
-        />
+        {showSuccessModal && (
+          <SurveySuccessModal
+            onGoHome={() => {
+              if (!completionTarget) return;
 
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/25 px-4 backdrop-blur-sm">
-          <div
-            className="w-full max-w-md rounded-[28px] p-6 shadow-2xl animate-fade-in-scale"
-            style={{
-              background: "rgba(255, 255, 255, 0.97)",
+              if (completionTarget.startsWith("http")) {
+                window.location.assign(completionTarget);
+                return;
+              }
+
+              router.push(completionTarget);
             }}
-          >
-            <div className="flex items-start gap-4">
-              <div
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
-                style={{
-                  background:
-                    "linear-gradient(135deg, var(--mevi-green-100), var(--mevi-green-200))",
-                  color: "var(--mevi-green-700)",
-                }}
-              >
-                <CheckCircle2 className="h-6 w-6" />
-              </div>
-              <div>
-                <p
-                  className="text-lg font-bold"
-                  style={{ color: "var(--mevi-text-primary)" }}
-                >
-                  Gửi khảo sát thành công
-                </p>
-                <p
-                  className="mt-2 text-sm leading-6"
-                  style={{ color: "var(--mevi-text-secondary)" }}
-                >
-                  Cảm ơn bà con đã chia sẻ ý kiến. MEVI sẽ chuyển tiếp ngay để
-                  bạn tiếp tục công việc.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  if (!completionTarget) return;
-
-                  if (completionTarget.startsWith("http")) {
-                    window.location.assign(completionTarget);
-                    return;
-                  }
-
-                  router.push(completionTarget);
-                }}
-                className="mevi-btn-primary w-auto px-5"
-              >
-                <span>Về trang chủ</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          />
+        )}
 
         <main className="flex-1 px-4 pb-5 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-5">
