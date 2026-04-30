@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { MeviPortalFooter } from "@/components/mevi-portal-footer";
+import { MeviPortalHeader } from "@/components/mevi-portal-header";
 
 /* ===== Module Data ===== */
 
@@ -140,7 +142,7 @@ export default function DashboardPage() {
     };
 
   return (
-    <div className="mevi-portal relative flex min-h-dvh flex-col overflow-x-hidden overflow-y-auto">
+    <div className="mevi-portal relative flex h-dvh flex-col overflow-hidden">
       {loadingModuleId && (
         <div className="fixed inset-0 z-[120] flex flex-col items-center justify-center gap-4 bg-white/80 backdrop-blur-sm">
           <div
@@ -229,62 +231,48 @@ export default function DashboardPage() {
       <DecorativeLeaves />
 
       {/* Top Nav */}
-      <nav
-        className="relative z-10 flex flex-col gap-4 px-4 py-5 opacity-0 animate-fade-in-up sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-12"
-        style={{ animationFillMode: "forwards" }}
-      >
-        <div className="flex items-center gap-3 self-start sm:self-auto">
-          <img
-            src="/mevi-logo.jpeg"
-            alt="MEVI Logo"
-            className="h-10 w-10 rounded-xl object-contain shadow-sm"
-            style={{ border: "1px solid var(--mevi-border)" }}
-          />
-          <div>
-            <h1
-              className="text-lg font-bold tracking-tight"
-              style={{ color: "var(--mevi-text-primary)" }}
-            >
-              MEVI
-            </h1>
-            <p
-              className="text-[11px] font-medium leading-tight -mt-0.5"
-              style={{ color: "var(--mevi-text-muted)" }}
-            >
-              Hệ sinh thái Nông nghiệp
-            </p>
-          </div>
-        </div>
-        <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-4">
-          <div
-            className="flex min-w-0 items-center gap-2 text-sm"
-            style={{ color: "var(--mevi-text-secondary)" }}
-          >
-            <div
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--mevi-green-500), var(--mevi-green-700))",
-              }}
-            >
-              NV
-            </div>
-            <span className="truncate font-medium">Nguyễn Văn A</span>
-          </div>
-          <Link
-            href="/"
-            className="flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-red-50"
-            style={{ color: "var(--mevi-text-muted)", textDecoration: "none" }}
-            title="Đăng xuất"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Đăng xuất</span>
-          </Link>
-        </div>
-      </nav>
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto pb-28 sm:pb-32">
+        <MeviPortalHeader
+          badgeLabel="Dashboard"
+          className="flex flex-col gap-4 px-4 pt-6 opacity-0 animate-fade-in-up sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:pt-6 md:px-12 md:pt-8"
+          style={{ animationFillMode: "forwards" }}
+          cardClassName="shrink-0"
+          rightSlotClassName="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-4"
+          rightSlot={
+            <>
+              <div
+                className="flex min-w-0 items-center gap-2 text-sm"
+                style={{ color: "var(--mevi-text-secondary)" }}
+              >
+                <div
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, var(--mevi-green-500), var(--mevi-green-700))",
+                  }}
+                >
+                  NV
+                </div>
+                <span className="truncate font-medium">Nguyễn Văn A</span>
+              </div>
+              <Link
+                href="/"
+                className="flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-red-50"
+                style={{
+                  color: "var(--mevi-text-muted)",
+                  textDecoration: "none",
+                }}
+                title="Đăng xuất"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Đăng xuất</span>
+              </Link>
+            </>
+          }
+        />
 
-      {/* Main Content */}
-      <main className="relative z-10 flex w-full flex-1 flex-col items-center px-4 pb-10 pt-4 sm:px-6 md:px-8 md:pb-14 md:pt-8">
+        {/* Main Content */}
+        <main className="flex w-full flex-1 flex-col items-center px-4 pb-10 pt-4 sm:px-6 md:px-8 md:pb-14 md:pt-8">
         {/* Section Header */}
         <div
           className="mb-8 text-center opacity-0 animate-fade-in-up delay-100 md:mb-10"
@@ -428,37 +416,11 @@ export default function DashboardPage() {
             );
           })}
         </div>
-      </main>
+        </main>
+      </div>
 
       {/* Footer */}
-      <footer
-        className="relative z-10 mt-auto w-full px-4 py-6 text-center sm:py-8"
-        style={{
-          borderTop: "1px solid var(--mevi-border)",
-          background: "rgba(255,255,255,0.3)",
-        }}
-      >
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <img
-            src="/mevi-logo.jpeg"
-            alt="MEVI"
-            className="h-6 w-6 rounded-lg object-contain"
-          />
-          <span
-            className="text-sm font-bold"
-            style={{ color: "var(--mevi-text-primary)" }}
-          >
-            MEVI
-          </span>
-        </div>
-        <p
-          className="mx-auto max-w-md text-xs leading-relaxed sm:max-w-none"
-          style={{ color: "var(--mevi-text-muted)" }}
-        >
-          © 2026 MEVI — Hệ sinh thái Nông nghiệp thông minh. Tất cả quyền được
-          bảo lưu.
-        </p>
-      </footer>
+      <MeviPortalFooter />
     </div>
   );
 }

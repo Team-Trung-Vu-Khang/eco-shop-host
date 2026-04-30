@@ -15,6 +15,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { MeviPortalHeader } from "@/components/mevi-portal-header";
+import { MeviPortalFooter } from "@/components/mevi-portal-footer";
 
 /* ===== Module Quick Access Data ===== */
 
@@ -130,7 +132,10 @@ export default function LoginPage() {
     setTimeout(() => {
       setIsLoggingIn(false);
       window.sessionStorage.setItem("mevi_user_email", email);
-      window.sessionStorage.setItem("mevi_user_name", "Tài khoản quản trị MEVI");
+      window.sessionStorage.setItem(
+        "mevi_user_name",
+        "Tài khoản quản trị MEVI",
+      );
       router.push("/survey?surveyId=396&source=login&returnTo=%2Fdashboard");
     }, 1200);
   };
@@ -139,39 +144,21 @@ export default function LoginPage() {
     <div className="mevi-portal relative flex h-dvh flex-col overflow-hidden">
       <DecorativeLeaves />
 
-      <nav
-        className="relative z-10 flex items-center justify-between gap-3 px-4 py-4 opacity-0 animate-fade-in-up sm:px-6 md:px-10"
-        style={{ animationFillMode: "forwards" }}
-      >
-        <div className="flex min-w-0 items-center gap-3">
-          <img
-            src="/mevi-logo.jpeg"
-            alt="MEVI Logo"
-            className="h-9 w-9 rounded-xl object-contain shadow-sm sm:h-10 sm:w-10"
-            style={{ border: "1px solid var(--mevi-border)" }}
-          />
-          <div className="min-w-0">
-            <h1
-              className="text-base font-bold tracking-tight sm:text-lg"
-              style={{ color: "var(--mevi-text-primary)" }}
-            >
-              MEVI
-            </h1>
-            <p
-              className="mt-[-2px] truncate text-[10px] font-medium leading-tight sm:text-[11px]"
-              style={{ color: "var(--mevi-text-muted)" }}
-            >
-              Hệ sinh thái Nông nghiệp
-            </p>
-          </div>
-        </div>
-        <div className="mevi-badge hidden sm:flex">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Nền tảng bảo mật</span>
-        </div>
-      </nav>
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto pb-28 sm:pb-32">
+        <MeviPortalHeader
+          badgeLabel="Đăng nhập"
+          className="opacity-0 animate-fade-in-up px-4 py-4 sm:px-6 md:px-10"
+          style={{ animationFillMode: "forwards" }}
+          rightSlot={
+            <>
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Nền tảng bảo mật</span>
+            </>
+          }
+          rightSlotClassName="mevi-badge hidden sm:flex"
+        />
 
-      <main className="relative z-10 flex min-h-0 w-full flex-1 items-center justify-center px-4 pb-4 pt-1 sm:px-6 md:justify-start md:px-8 md:pt-2">
+        <main className="flex w-full flex-1 items-center justify-center px-4 pb-4 pt-1 sm:px-6 md:justify-start md:px-8 md:pt-2">
         <div className="w-full md:hidden">
           <div className="mx-auto w-full max-w-[22rem]">
             <div
@@ -504,36 +491,10 @@ export default function LoginPage() {
             </div>
           </div>
         </div>
-      </main>
+        </main>
+      </div>
 
-      <footer
-        className="mevi-desktop-footer relative z-10 mt-auto hidden w-full px-4 py-4 text-center md:block"
-        style={{
-          borderTop: "1px solid var(--mevi-border)",
-          background: "rgba(255,255,255,0.3)",
-        }}
-      >
-        <div className="mb-2 flex items-center justify-center gap-2">
-          <img
-            src="/mevi-logo.jpeg"
-            alt="MEVI"
-            className="h-6 w-6 rounded-lg object-contain"
-          />
-          <span
-            className="text-sm font-bold"
-            style={{ color: "var(--mevi-text-primary)" }}
-          >
-            MEVI
-          </span>
-        </div>
-        <p
-          className="mx-auto max-w-md whitespace-nowrap text-xs leading-relaxed sm:max-w-none"
-          style={{ color: "var(--mevi-text-muted)" }}
-        >
-          © 2026 MEVI — Hệ sinh thái Nông nghiệp thông minh. Tất cả quyền được
-          bảo lưu.
-        </p>
-      </footer>
+      <MeviPortalFooter />
     </div>
   );
 }

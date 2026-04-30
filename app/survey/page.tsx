@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
+import { MeviPortalFooter } from "@/components/mevi-portal-footer";
+import { MeviPortalHeader } from "@/components/mevi-portal-header";
 import {
   type SurveyAnswerValue,
   type SurveyOption,
@@ -350,103 +352,6 @@ type SurveyQuestionWithMeta = SurveyQuestion & {
   originalQuestionId?: number;
 };
 
-function PortalHeader({
-  title,
-  subtitle,
-  accent,
-}: {
-  title: string;
-  subtitle: string;
-  accent: string;
-}) {
-  return (
-    <nav className="relative z-10 flex flex-col gap-4 px-4 py-5 opacity-0 animate-fade-in-up sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-12">
-      <div className="flex items-center gap-3 self-start sm:self-auto">
-        <img
-          src="/mevi-logo.jpeg"
-          alt="MEVI"
-          className="h-10 w-10 rounded-xl object-contain shadow-sm"
-          style={{ border: "1px solid var(--mevi-border)" }}
-        />
-        <div>
-          <h1
-            className="text-lg font-bold tracking-tight"
-            style={{ color: "var(--mevi-text-primary)" }}
-          >
-            MEVI
-          </h1>
-          <p
-            className="text-[11px] font-medium leading-tight -mt-0.5 sm:text-xs"
-            style={{ color: "var(--mevi-text-muted)" }}
-          >
-            {subtitle}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-4">
-        <div
-          className="hidden min-w-0 items-center gap-2 text-sm sm:flex"
-          style={{ color: "var(--mevi-text-secondary)" }}
-        >
-          <div
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--mevi-green-500), var(--mevi-green-700))",
-            }}
-          >
-            <ShieldCheck className="h-4 w-4" />
-          </div>
-          <span className="truncate font-medium">Khảo sát MEVI</span>
-        </div>
-
-        <div
-          className="flex shrink-0 items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold"
-          style={{
-            color: accent,
-            background: "rgba(255, 255, 255, 0.78)",
-            border: "1px solid rgba(212, 229, 216, 0.9)",
-          }}
-        >
-          <ShieldCheck className="h-3.5 w-3.5" />
-          <span className="truncate">{title}</span>
-        </div>
-      </div>
-    </nav>
-  );
-}
-
-function PortalFooter() {
-  return (
-    <footer
-      className="border-t border-[rgba(212,229,216,0.7)] bg-[rgba(255,255,255,0.45)] px-4 py-4 text-center backdrop-blur-xl"
-      style={{ marginTop: "auto" }}
-    >
-      <div className="mb-2 flex items-center justify-center gap-2">
-        <img
-          src="/mevi-logo.jpeg"
-          alt="MEVI"
-          className="h-6 w-6 rounded-lg object-contain"
-        />
-        <span
-          className="text-sm font-bold"
-          style={{ color: "var(--mevi-text-primary)" }}
-        >
-          MEVI
-        </span>
-      </div>
-      <p
-        className="mx-auto max-w-md text-xs leading-relaxed"
-        style={{ color: "var(--mevi-text-muted)" }}
-      >
-        © 2026 MEVI — Hệ sinh thái Nông nghiệp thông minh. Tất cả quyền được bảo
-        lưu.
-      </p>
-    </footer>
-  );
-}
-
 function SurveyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -501,8 +406,7 @@ function SurveyPageContent() {
   );
   const currentQuestion = wizardQuestions[effectiveIndex];
   const currentSurveyId =
-    currentQuestion &&
-    currentQuestion.surveyPeriodId
+    currentQuestion && currentQuestion.surveyPeriodId
       ? currentQuestion.surveyPeriodId
       : GENERAL_SURVEY_ID;
   const currentSurvey =
@@ -638,17 +542,46 @@ function SurveyPageContent() {
   const nextDisabled = submitMutation.isPending;
 
   return (
-    <div className="mevi-portal relative flex min-h-dvh flex-col overflow-hidden">
+    <div className="mevi-portal relative flex h-dvh flex-col overflow-hidden">
       <DecorativeLeaves />
-      <PortalHeader
-        title={portalTitle}
-        subtitle={
-          source === "module"
-            ? "Khởi động khảo sát trước khi vào phân hệ"
-            : "Đăng nhập xong là vào khảo sát ngay"
-        }
-        accent={currentSurvey.accent}
-      />
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto pb-28 sm:pb-32">
+        <MeviPortalHeader
+          badgeLabel={portalTitle}
+          className="flex flex-col gap-3 px-3 py-3 opacity-0 animate-fade-in-up sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 md:px-12"
+          style={{ animationFillMode: "forwards" }}
+          rightSlotClassName="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-4"
+          rightSlot={
+            <>
+              <div
+                className="hidden min-w-0 items-center gap-2 text-sm sm:flex"
+                style={{ color: "var(--mevi-text-secondary)" }}
+              >
+                <div
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, var(--mevi-green-500), var(--mevi-green-700))",
+                  }}
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                </div>
+                <span className="truncate font-medium">Khảo sát MEVI</span>
+              </div>
+
+              <div
+                className="flex shrink-0 items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold"
+                style={{
+                  color: currentSurvey.accent,
+                  background: "rgba(255, 255, 255, 0.78)",
+                  border: "1px solid rgba(212, 229, 216, 0.9)",
+                }}
+              >
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span className="truncate">{portalTitle}</span>
+              </div>
+            </>
+          }
+        />
 
       {showSuccessModal && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/25 px-4 backdrop-blur-sm">
@@ -700,7 +633,7 @@ function SurveyPageContent() {
                   router.push(completionTarget);
                 }}
                 className="mevi-btn-primary w-auto px-5"
-                >
+              >
                 <span>Về trang chủ</span>
               </button>
             </div>
@@ -708,7 +641,7 @@ function SurveyPageContent() {
         </div>
       )}
 
-      <main className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 lg:px-8">
+        <main className="flex-1 px-4 pb-5 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-5">
           <section
             className="overflow-hidden rounded-[32px] shadow-[0_24px_60px_-36px_rgba(6,78,59,0.22)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_70px_-34px_rgba(6,78,59,0.28)]"
@@ -803,14 +736,14 @@ function SurveyPageContent() {
               </div>
 
               <div className="mt-4 h-2 overflow-hidden rounded-full bg-[rgba(212,229,216,0.8)]">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${progress}%`,
-                      background: `linear-gradient(90deg, ${currentSurvey.accent}, var(--mevi-green-500))`,
-                    }}
-                  />
-                </div>
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${progress}%`,
+                    background: `linear-gradient(90deg, ${currentSurvey.accent}, var(--mevi-green-500))`,
+                  }}
+                />
+              </div>
             </div>
           </section>
 
@@ -955,37 +888,37 @@ function SurveyPageContent() {
                         );
 
                         return (
-                              <button
-                                key={option.id}
-                                type="button"
-                                onClick={() =>
-                                  updateAnswer(currentQuestion.id, option.id)
-                                }
-                                className="group w-full rounded-[24px] border border-transparent p-4 text-left transition-all duration-300 transform-gpu hover:-translate-y-1 hover:border-[rgba(16,185,129,0.22)] hover:shadow-[0_22px_38px_-24px_rgba(6,78,59,0.28)]"
-                                style={{
-                                  background: checked
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() =>
+                              updateAnswer(currentQuestion.id, option.id)
+                            }
+                            className="group w-full rounded-[24px] border border-transparent p-4 text-left transition-all duration-300 transform-gpu hover:-translate-y-1 hover:border-[rgba(16,185,129,0.22)] hover:shadow-[0_22px_38px_-24px_rgba(6,78,59,0.28)]"
+                            style={{
+                              background: checked
                                 ? currentSurvey.softAccent
                                 : "rgba(255,255,255,0.9)",
-                                  borderColor: checked
+                              borderColor: checked
                                 ? `${currentSurvey.accent}33`
                                 : "transparent",
-                                  boxShadow: checked
+                              boxShadow: checked
                                 ? "0 22px 38px -24px rgba(6,78,59,0.34)"
                                 : "0 10px 24px -20px rgba(6,78,59,0.12)",
-                                }}
+                            }}
                           >
                             <div className="flex items-center gap-4">
-                                <div
-                                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold"
-                                  style={{
-                                    background: checked
+                              <div
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+                                style={{
+                                  background: checked
                                     ? currentSurvey.accent
                                     : "rgba(236,253,245,0.75)",
                                   color: checked
                                     ? "white"
                                     : currentSurvey.accent,
-                                  }}
-                                >
+                                }}
+                              >
                                 {index + 1}
                               </div>
                               <div className="min-w-0 flex-1">
@@ -1037,37 +970,37 @@ function SurveyPageContent() {
                         );
 
                         return (
-                              <button
-                                key={option.id}
-                                type="button"
-                                onClick={() =>
-                                  toggleMultiChoice(currentQuestion.id, option.id)
-                                }
-                                className="group w-full rounded-[24px] border border-transparent p-4 text-left transition-all duration-300 transform-gpu hover:-translate-y-1 hover:border-[rgba(16,185,129,0.22)] hover:shadow-[0_22px_38px_-24px_rgba(6,78,59,0.28)]"
-                                style={{
-                                  background: checked
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() =>
+                              toggleMultiChoice(currentQuestion.id, option.id)
+                            }
+                            className="group w-full rounded-[24px] border border-transparent p-4 text-left transition-all duration-300 transform-gpu hover:-translate-y-1 hover:border-[rgba(16,185,129,0.22)] hover:shadow-[0_22px_38px_-24px_rgba(6,78,59,0.28)]"
+                            style={{
+                              background: checked
                                 ? currentSurvey.softAccent
                                 : "rgba(255,255,255,0.9)",
-                                  borderColor: checked
+                              borderColor: checked
                                 ? `${currentSurvey.accent}33`
                                 : "transparent",
-                                  boxShadow: checked
+                              boxShadow: checked
                                 ? "0 22px 38px -24px rgba(6,78,59,0.34)"
                                 : "0 10px 24px -20px rgba(6,78,59,0.12)",
-                                }}
+                            }}
                           >
                             <div className="flex items-center gap-4">
-                                <div
-                                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold"
-                                  style={{
-                                    background: checked
+                              <div
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+                                style={{
+                                  background: checked
                                     ? currentSurvey.accent
                                     : "rgba(236,253,245,0.75)",
                                   color: checked
                                     ? "white"
                                     : currentSurvey.accent,
-                                  }}
-                                >
+                                }}
+                              >
                                 {index + 1}
                               </div>
                               <div className="min-w-0 flex-1">
@@ -1119,40 +1052,40 @@ function SurveyPageContent() {
                         );
 
                         return (
-                              <button
-                                key={option.id}
-                                type="button"
-                                onClick={() =>
-                                  updateAnswer(currentQuestion.id, option.id)
-                                }
-                                className="group w-full rounded-[24px] border border-transparent px-4 py-4 text-left transition-all duration-300 transform-gpu hover:-translate-y-1 hover:border-[rgba(16,185,129,0.22)] hover:shadow-[0_22px_38px_-24px_rgba(6,78,59,0.28)]"
-                                style={{
-                                  color: checked
-                                    ? "white"
-                                    : "var(--mevi-text-primary)",
-                                  background: checked
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() =>
+                              updateAnswer(currentQuestion.id, option.id)
+                            }
+                            className="group w-full rounded-[24px] border border-transparent px-4 py-4 text-left transition-all duration-300 transform-gpu hover:-translate-y-1 hover:border-[rgba(16,185,129,0.22)] hover:shadow-[0_22px_38px_-24px_rgba(6,78,59,0.28)]"
+                            style={{
+                              color: checked
+                                ? "white"
+                                : "var(--mevi-text-primary)",
+                              background: checked
                                 ? currentSurvey.accent
                                 : "rgba(255,255,255,0.9)",
-                                  borderColor: checked
+                              borderColor: checked
                                 ? `${currentSurvey.accent}33`
                                 : "transparent",
-                                  boxShadow: checked
+                              boxShadow: checked
                                 ? "0 22px 38px -24px rgba(6,78,59,0.34)"
                                 : "0 10px 24px -20px rgba(6,78,59,0.12)",
-                                }}
+                            }}
                           >
                             <div className="flex items-center gap-4">
-                                <div
-                                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold"
-                                  style={{
-                                    background: checked
+                              <div
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+                                style={{
+                                  background: checked
                                     ? "rgba(255,255,255,0.18)"
                                     : currentSurvey.softAccent,
                                   color: checked
                                     ? "white"
                                     : currentSurvey.accent,
-                                  }}
-                                >
+                                }}
+                              >
                                 {index + 1}
                               </div>
                               <div className="min-w-0 flex-1">
@@ -1189,37 +1122,37 @@ function SurveyPageContent() {
                               );
 
                         return (
-                              <button
-                                key={option.id}
-                                type="button"
-                                onClick={() =>
-                                  updateAnswer(currentQuestion.id, option.id === 1)
-                                }
-                                className="group w-full rounded-[24px] border border-transparent p-4 text-left transition-all duration-300 transform-gpu hover:-translate-y-1 hover:border-[rgba(16,185,129,0.22)] hover:shadow-[0_22px_38px_-24px_rgba(6,78,59,0.28)]"
-                                style={{
-                                  background: checked
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() =>
+                              updateAnswer(currentQuestion.id, option.id === 1)
+                            }
+                            className="group w-full rounded-[24px] border border-transparent p-4 text-left transition-all duration-300 transform-gpu hover:-translate-y-1 hover:border-[rgba(16,185,129,0.22)] hover:shadow-[0_22px_38px_-24px_rgba(6,78,59,0.28)]"
+                            style={{
+                              background: checked
                                 ? currentSurvey.softAccent
                                 : "rgba(255,255,255,0.9)",
-                                  borderColor: checked
+                              borderColor: checked
                                 ? `${currentSurvey.accent}33`
                                 : "transparent",
-                                  boxShadow: checked
+                              boxShadow: checked
                                 ? "0 22px 38px -24px rgba(6,78,59,0.34)"
                                 : "0 10px 24px -20px rgba(6,78,59,0.12)",
-                                }}
+                            }}
                           >
                             <div className="flex items-center gap-4">
-                                <div
-                                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold"
-                                  style={{
-                                    background: checked
+                              <div
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+                                style={{
+                                  background: checked
                                     ? currentSurvey.accent
                                     : "rgba(236,253,245,0.75)",
                                   color: checked
                                     ? "white"
                                     : currentSurvey.accent,
-                                  }}
-                                >
+                                }}
+                              >
                                 {index + 1}
                               </div>
                               <div
@@ -1265,9 +1198,7 @@ function SurveyPageContent() {
                 )}
               </article>
 
-              <div
-                className="flex flex-col gap-4 rounded-[28px] border border-transparent bg-white/78 p-5 shadow-[0_18px_50px_-34px_rgba(6,78,59,0.18)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(16,185,129,0.22)] hover:shadow-[0_26px_60px_-30px_rgba(6,78,59,0.24)] sm:flex-row sm:items-center sm:justify-between"
-              >
+              <div className="flex flex-col gap-4 rounded-[28px] border border-transparent bg-white/78 p-5 shadow-[0_18px_50px_-34px_rgba(6,78,59,0.18)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(16,185,129,0.22)] hover:shadow-[0_26px_60px_-30px_rgba(6,78,59,0.24)] sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p
                     className="text-sm font-semibold"
@@ -1324,9 +1255,10 @@ function SurveyPageContent() {
             </section>
           )}
         </div>
-      </main>
+        </main>
+      </div>
 
-      <PortalFooter />
+      <MeviPortalFooter />
     </div>
   );
 }

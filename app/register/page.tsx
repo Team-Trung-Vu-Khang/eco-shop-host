@@ -10,9 +10,10 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { MeviPortalFooter } from "@/components/mevi-portal-footer";
+import { MeviPortalHeader } from "@/components/mevi-portal-header";
 
 const audienceOptions = [
   "A. Cá nhân/Hộ nông dân.",
@@ -100,59 +101,41 @@ export default function RegistrationPage() {
   });
 
   return (
-    <div className="mevi-portal relative flex h-dvh flex-col overflow-x-hidden overflow-y-auto md:overflow-y-hidden">
+    <div className="mevi-portal relative flex h-dvh flex-col overflow-hidden">
       <DecorativeLeaves />
 
-      <nav className="relative z-10 flex items-center justify-between gap-3 px-4 py-4 sm:px-6 md:px-10">
-        <div className="flex min-w-0 items-center gap-3">
-          <Image
-            src="/mevi-logo.jpeg"
-            alt="MEVI Logo"
-            className="h-9 w-9 rounded-xl object-contain shadow-sm sm:h-10 sm:w-10"
-            style={{ border: "1px solid var(--mevi-border)" }}
-            width={40}
-            height={40}
-          />
-          <div className="min-w-0">
-            <h1
-              className="text-sm font-bold tracking-tight sm:text-lg"
-              style={{ color: "var(--mevi-text-primary)" }}
-            >
-              MEVI
-            </h1>
-            <p
-              className="mt-[-2px] text-[10px] font-medium leading-tight sm:text-[11px]"
-              style={{ color: "var(--mevi-text-muted)" }}
-            >
-              Hệ sinh thái Nông nghiệp
-            </p>
-          </div>
-        </div>
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto pb-28 sm:pb-32">
+        <MeviPortalHeader
+          badgeLabel="Đăng ký"
+          className="px-4 py-4 sm:px-6 md:px-10"
+          rightSlot={
+            <>
+              <div className="sm:hidden">
+                <Link
+                  href="/"
+                  className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-medium opacity-80 transition hover:opacity-100"
+                  style={{ color: "var(--mevi-text-muted)" }}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Quay lại
+                </Link>
+              </div>
 
-        <div className="sm:hidden">
-          <Link
-            href={"/"}
-            className="inline-flex items-center gap-1.5 text-sm font-medium opacity-80 transition hover:opacity-100"
-            style={{ color: "var(--mevi-text-muted)" }}
-          >
-            <LogOut className="h-4 w-4" />
-            Quay lại
-          </Link>
-        </div>
+              <div className="hidden items-center gap-5 sm:flex">
+                <Link
+                  href="/"
+                  className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm font-medium opacity-80 transition hover:opacity-100"
+                  style={{ color: "var(--mevi-text-muted)" }}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Quay lại
+                </Link>
+              </div>
+            </>
+          }
+        />
 
-        <div className="hidden items-center gap-5 sm:flex">
-          <Link
-            href={"/"}
-            className="inline-flex items-center gap-1.5 text-sm font-medium opacity-80 transition hover:opacity-100"
-            style={{ color: "var(--mevi-text-muted)" }}
-          >
-            <LogOut className="h-4 w-4" />
-            Quay lại
-          </Link>
-        </div>
-      </nav>
-
-      <main className="relative z-10 inline-flex min-h-0 flex-1 items-center px-3 py-2 sm:px-6 md:px-10">
+        <main className="flex w-full flex-1 items-center px-3 py-2 sm:px-6 md:px-10">
         <div className="mx-auto grid w-full max-w-5xl gap-3 lg:grid-cols-[0.88fr_1.12fr]">
           <section className="hidden flex-col justify-center lg:flex">
             <div className="mevi-ecosystem-badge mb-3 w-fit px-3 py-1 text-[11px]">
@@ -247,7 +230,7 @@ export default function RegistrationPage() {
               onSubmit={onSubmit}
               className="flex min-h-0 flex-1 flex-col gap-2.5"
             >
-              <div className="grid min-h-0 flex-1 gap-2.5 overflow-y-auto pr-1">
+              <div className="grid min-h-0 flex-1 gap-2.5 pr-1">
                 <div className="space-y-1">
                   <label
                     htmlFor="fullName"
@@ -422,7 +405,10 @@ export default function RegistrationPage() {
             ) : null}
           </section>
         </div>
-      </main>
+        </main>
+      </div>
+
+      <MeviPortalFooter />
     </div>
   );
 }
