@@ -10,7 +10,7 @@ export const SURVEY_REQUEST_TYPES = [
 ] as const;
 
 export type SurveyRequestType = (typeof SURVEY_REQUEST_TYPES)[number];
-export type SurveyLookupType = "phone" | "email";
+export type SurveyLookupType = "phone" | "email" | "code" | "userId";
 
 export const SURVEY_PERIOD_IDS: Record<SurveyRequestType, number> = {
   general: 396,
@@ -23,6 +23,7 @@ export type SurveyQuestionType =
   | "essay"
   | "single_choice"
   | "multiple_choice"
+  | "linear_range"
   | "rating"
   | "yes_no"
   | "single_choice_matrix"
@@ -33,6 +34,7 @@ export type SurveyOption = {
   id: number;
   label: string;
   description?: string;
+  sortIndex?: number | null;
   isOther?: boolean | null;
   isRow?: boolean | null;
 };
@@ -41,6 +43,7 @@ export type SurveyQuestion = {
   id: number;
   code: string;
   content: string;
+  contentRich?: string | null;
   helperText?: string | null;
   type: SurveyQuestionType;
   required?: boolean;
@@ -50,7 +53,15 @@ export type SurveyQuestion = {
   source: "api" | "demo";
 };
 
-export type SurveyAnswerValue = string | number[] | number | boolean | null;
+export type MatrixSurveyAnswerValue = Record<string, number | number[]>;
+
+export type SurveyAnswerValue =
+  | string
+  | number[]
+  | number
+  | boolean
+  | MatrixSurveyAnswerValue
+  | null;
 
 export type SurveyResultDetails = {
   id: number;
@@ -60,6 +71,7 @@ export type SurveyResultDetails = {
   positionName: string;
   departmentName: string;
   email: string;
+  companyId?: number;
   surveyPeriodId: number;
   surveyPeriodName: string;
   status?: "not_started" | "submitted" | string;
@@ -79,6 +91,7 @@ type RawApiQuestion = {
   id?: number;
   code?: string;
   content?: string;
+  contentRich?: string | null;
   note?: string | null;
   type?: string;
   linearRangeFromLabel?: string | null;
@@ -94,6 +107,7 @@ type RawApiSurveyData = {
   positionName?: string;
   departmentName?: string;
   email?: string;
+  companyId?: number;
   surveyPeriodId?: number;
   surveyPeriodName?: string;
   status?: string;
@@ -108,15 +122,24 @@ export type RawApiSurveyResponse = {
 };
 
 export type SubmitSurveyPayload = {
-  email: string;
+  type?: SurveyLookupType;
+  phone?: string;
+  email?: string;
+  code?: string;
+  userId?: string;
   dataSubmit: Array<{
     questionId: number;
     answers: Array<{
       answerRowId?: number;
       answerIds: number[];
-      content: string;
+      content?: string;
     }>;
   }>;
+};
+
+export type SurveyRequestContext = {
+  companyId?: number | string | null;
+  userId?: string | null;
 };
 
 export function normalizeObjectKeys<T>(input: T): T {
@@ -150,6 +173,7 @@ export function mapApiQuestionType(type?: string): SurveyQuestionType {
     case "checkbox":
       return "multiple_choice";
     case "linear_range":
+      return "linear_range";
     case "rating":
     case "scale":
       return "rating";
@@ -184,6 +208,7 @@ export function mapApiSurveyResponse(
         .map((answer) => ({
           id: answer.id as number,
           label: answer.content?.trim() || `Lựa chọn ${answer.id}`,
+          sortIndex: answer.sortIndex ?? null,
           isOther: answer.isOther ?? false,
           isRow: answer.isRow ?? false,
         }));
@@ -192,14 +217,10 @@ export function mapApiSurveyResponse(
         id: question.id ?? 0,
         code: question.code ?? "",
         content: question.content ?? "",
+        contentRich: question.contentRich ?? null,
         helperText: question.note ?? null,
         type: mappedType,
-        options:
-          mappedType === "essay"
-            ? undefined
-            : options.length
-              ? options
-              : undefined,
+        options: options.length ? options : undefined,
         ratingMinLabel: question.linearRangeFromLabel ?? null,
         ratingMaxLabel: question.linearRangeToLabel ?? null,
         source: "api",
@@ -215,6 +236,7 @@ export function mapApiSurveyResponse(
     positionName: data.positionName ?? "",
     departmentName: data.departmentName ?? "",
     email: data.email ?? "",
+    companyId: data.companyId,
     surveyPeriodId: data.surveyPeriodId ?? 0,
     surveyPeriodName: data.surveyPeriodName ?? "",
     status: data.status,
@@ -228,6 +250,7 @@ export function getDefaultAnswer(question: SurveyQuestion): SurveyAnswerValue {
     case "essay":
       return "";
     case "single_choice":
+    case "linear_range":
     case "rating":
       return null;
     case "multiple_choice":
@@ -237,7 +260,7 @@ export function getDefaultAnswer(question: SurveyQuestion): SurveyAnswerValue {
     case "single_choice_matrix":
     case "multi_choice_matrix":
     case "linear_matrix":
-      return [];
+      return {};
     default:
       return "";
   }
@@ -248,28 +271,58 @@ export function isAnswered(value: SurveyAnswerValue) {
   if (Array.isArray(value)) return value.length > 0;
   if (typeof value === "number") return true;
   if (typeof value === "boolean") return true;
+  if (value && typeof value === "object") {
+    return Object.values(value).some((rowValue) =>
+      Array.isArray(rowValue)
+        ? rowValue.length > 0
+        : typeof rowValue === "number",
+    );
+  }
   return false;
 }
 
 export function inferSurveyLookupType(value: string): SurveyLookupType {
+  if (
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value,
+    )
+  ) {
+    return "userId";
+  }
+
   return value.includes("@") ? "email" : "phone";
+}
+
+function buildSurveyHeaders(context?: SurveyRequestContext) {
+  const headers: Record<string, string> = {
+    accept: "application/json",
+    authorization: SURVEY_MEVI_AUTHORIZATION,
+    "content-type": "application/json",
+  };
+
+  if (context?.companyId != null && String(context.companyId).trim()) {
+    headers["x-company-id"] = String(context.companyId);
+  }
+
+  if (context?.userId?.trim()) {
+    headers["x-user-id"] = context.userId.trim();
+  }
+
+  return headers;
 }
 
 export async function fetchSurveyDetail(
   type: SurveyRequestType,
   value: string,
   lookupType: SurveyLookupType = inferSurveyLookupType(value),
+  context?: SurveyRequestContext,
 ): Promise<SurveyResultDetails | null> {
   const apiUrl = new URL(`${SURVEY_API_BASE}/survey-result-mevi/${type}`);
   apiUrl.searchParams.set("type", lookupType);
   apiUrl.searchParams.set(lookupType, value);
 
   const response = await fetch(apiUrl.toString(), {
-    headers: {
-      accept: "*/*",
-      "accept-language": "vi,en;q=0.9",
-      authorization: SURVEY_MEVI_AUTHORIZATION,
-    },
+    headers: buildSurveyHeaders(context),
     cache: "no-store",
   });
   const payload = normalizeObjectKeys(
@@ -284,27 +337,22 @@ export async function fetchSurveyDetail(
 }
 
 export async function submitSurveyResult(
-  surveyPeriodId: number,
+  surveyType: string,
   payload: SubmitSurveyPayload,
+  context?: SurveyRequestContext,
 ) {
   const response = await fetch(
-    `${SURVEY_API_BASE}/survey-periods/${surveyPeriodId}/results/submit`,
+    `${SURVEY_API_BASE}/survey-result-mevi/${surveyType}/submit`,
     {
       method: "POST",
-      headers: {
-        accept: "application/json",
-        authorization: SURVEY_MEVI_AUTHORIZATION,
-        "content-type": "application/json",
-      },
+      headers: buildSurveyHeaders(context),
       body: JSON.stringify(payload),
     },
   );
   const responsePayload = normalizeObjectKeys(await response.json());
 
   if (!response.ok) {
-    throw new Error(
-      responsePayload.message || "Không hoàn tất được khảo sát.",
-    );
+    throw new Error(responsePayload.message || "Không hoàn tất được khảo sát.");
   }
 
   return responsePayload;

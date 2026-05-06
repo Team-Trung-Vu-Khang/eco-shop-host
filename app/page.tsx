@@ -1,5 +1,7 @@
 "use client";
 
+import { MeviPortalFooter } from "@/components/mevi-portal-footer";
+import { MeviPortalHeader } from "@/components/mevi-portal-header";
 import {
   ArrowRight,
   BookOpen,
@@ -15,8 +17,6 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { MeviPortalHeader } from "@/components/mevi-portal-header";
-import { MeviPortalFooter } from "@/components/mevi-portal-footer";
 
 /* ===== Module Quick Access Data ===== */
 
@@ -141,7 +141,15 @@ export default function LoginPage() {
         "mevi_user_name",
         "Tài khoản quản trị MEVI",
       );
-      router.push("/survey?surveyId=396&source=login&returnTo=%2Fdashboard");
+      const surveyParams = new URLSearchParams({
+        surveyType: "general",
+        source: "login",
+        returnTo: "/dashboard",
+        type: lookupType,
+        [lookupType]: loginIdentifier,
+      });
+
+      router.push(`/survey?${surveyParams.toString()}`);
     }, 1200);
   };
 
@@ -164,338 +172,338 @@ export default function LoginPage() {
         />
 
         <main className="flex w-full flex-1 items-center justify-center px-4 pb-4 pt-1 sm:px-6 md:justify-start md:px-8 md:pt-2">
-        <div className="w-full md:hidden">
-          <div className="mx-auto w-full max-w-[22rem]">
-            <div
-              className="mevi-login-card w-full p-4 opacity-0 animate-fade-in-scale delay-300"
-              style={{ animationFillMode: "forwards" }}
-            >
-              <div className="mb-4 text-center sm:mb-5">
-                <div className="mb-3 inline-flex items-center justify-center animate-float">
-                  <img
-                    src="/mevi-logo.jpeg"
-                    alt="MEVI Logo"
-                    className="h-9 w-9 rounded-xl object-contain shadow-sm"
-                    style={{ border: "1px solid var(--mevi-border)" }}
-                  />
+          <div className="w-full md:hidden">
+            <div className="mx-auto w-full max-w-[22rem]">
+              <div
+                className="mevi-login-card w-full p-4 opacity-0 animate-fade-in-scale delay-300"
+                style={{ animationFillMode: "forwards" }}
+              >
+                <div className="mb-4 text-center sm:mb-5">
+                  <div className="mb-3 inline-flex items-center justify-center animate-float">
+                    <img
+                      src="/mevi-logo.jpeg"
+                      alt="MEVI Logo"
+                      className="h-9 w-9 rounded-xl object-contain shadow-sm"
+                      style={{ border: "1px solid var(--mevi-border)" }}
+                    />
+                  </div>
+
+                  <h2
+                    className="text-lg font-bold tracking-tight sm:text-[1.35rem]"
+                    style={{ color: "var(--mevi-text-primary)" }}
+                  >
+                    Chào mừng trở lại
+                  </h2>
+                  <p
+                    className="mt-1 text-xs sm:text-sm"
+                    style={{ color: "var(--mevi-text-muted)" }}
+                  >
+                    Đăng nhập để tiếp tục
+                  </p>
+                </div>
+
+                <form onSubmit={handleLogin} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="login-email"
+                      className="block text-sm font-medium"
+                      style={{ color: "var(--mevi-text-secondary)" }}
+                    >
+                      Email / Số điện thoại
+                    </label>
+                    <div className="relative">
+                      <Mail
+                        className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
+                        style={{ color: "var(--mevi-text-muted)" }}
+                      />
+                      <input
+                        id="login-email"
+                        type="text"
+                        className="mevi-input"
+                        style={{ paddingLeft: "44px" }}
+                        placeholder="nguyenvana@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <label
+                        htmlFor="login-password"
+                        className="block text-sm font-medium"
+                        style={{ color: "var(--mevi-text-secondary)" }}
+                      >
+                        Mật khẩu
+                      </label>
+                      <button
+                        type="button"
+                        className="text-xs font-medium hover:underline"
+                        style={{ color: "var(--mevi-green-600)" }}
+                      >
+                        Quên mật khẩu?
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <Lock
+                        className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
+                        style={{ color: "var(--mevi-text-muted)" }}
+                      />
+                      <input
+                        id="login-password"
+                        type="password"
+                        className="mevi-input"
+                        style={{ paddingLeft: "44px" }}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <input
+                      id="remember-me"
+                      type="checkbox"
+                      className="h-4 w-4 rounded"
+                      style={{ accentColor: "var(--mevi-green-600)" }}
+                    />
+                    <label
+                      htmlFor="remember-me"
+                      className="text-sm"
+                      style={{ color: "var(--mevi-text-secondary)" }}
+                    >
+                      Ghi nhớ đăng nhập
+                    </label>
+                  </div>
+
+                  <div className="pt-0.5">
+                    <button
+                      type="submit"
+                      className="mevi-btn-primary"
+                      disabled={isLoggingIn}
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        {isLoggingIn ? (
+                          <>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            Đang đăng nhập...
+                          </>
+                        ) : (
+                          <>
+                            Đăng nhập
+                            <ArrowRight className="h-[18px] w-[18px]" />
+                          </>
+                        )}
+                      </span>
+                    </button>
+                  </div>
+
+                  <p
+                    className="text-center text-sm"
+                    style={{ color: "var(--mevi-text-secondary)" }}
+                  >
+                    Bạn đã có tài khoản chưa?{" "}
+                    <Link
+                      href="/register"
+                      className="font-semibold underline-offset-2 hover:underline"
+                      style={{ color: "var(--mevi-green-700)" }}
+                    >
+                      Đăng ký
+                    </Link>
+                  </p>
+
+                  <div className="pt-1">
+                    <EcosystemFlowMini />
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden w-full md:block">
+            <div className="mevi-desktop-shell mx-auto flex w-full max-w-xl flex-col items-center">
+              <div className="mb-4 max-w-2xl text-center lg:mb-6">
+                <div
+                  className="opacity-0 animate-fade-in-up delay-100"
+                  style={{ animationFillMode: "forwards" }}
+                >
+                  <div className="mevi-ecosystem-badge mx-auto mb-3 text-xs py-1">
+                    <Link2 className="w-3.5 h-3.5" />
+                    <span>Mevi Ecosystem</span>
+                  </div>
                 </div>
 
                 <h2
-                  className="text-lg font-bold tracking-tight sm:text-[1.35rem]"
-                  style={{ color: "var(--mevi-text-primary)" }}
-                >
-                  Chào mừng trở lại
-                </h2>
-                <p
-                  className="mt-1 text-xs sm:text-sm"
-                  style={{ color: "var(--mevi-text-muted)" }}
-                >
-                  Đăng nhập để tiếp tục
-                </p>
-              </div>
-
-              <form onSubmit={handleLogin} className="space-y-3">
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="login-email"
-                    className="block text-sm font-medium"
-                    style={{ color: "var(--mevi-text-secondary)" }}
-                  >
-                    Email / Số điện thoại
-                  </label>
-                  <div className="relative">
-                    <Mail
-                      className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
-                      style={{ color: "var(--mevi-text-muted)" }}
-                    />
-                    <input
-                      id="login-email"
-                      type="text"
-                      className="mevi-input"
-                      style={{ paddingLeft: "44px" }}
-                      placeholder="nguyenvana@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      autoComplete="email"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between gap-3">
-                    <label
-                      htmlFor="login-password"
-                      className="block text-sm font-medium"
-                      style={{ color: "var(--mevi-text-secondary)" }}
-                    >
-                      Mật khẩu
-                    </label>
-                    <button
-                      type="button"
-                      className="text-xs font-medium hover:underline"
-                      style={{ color: "var(--mevi-green-600)" }}
-                    >
-                      Quên mật khẩu?
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <Lock
-                      className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
-                      style={{ color: "var(--mevi-text-muted)" }}
-                    />
-                    <input
-                      id="login-password"
-                      type="password"
-                      className="mevi-input"
-                      style={{ paddingLeft: "44px" }}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      autoComplete="current-password"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 pt-0.5">
-                  <input
-                    id="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 rounded"
-                    style={{ accentColor: "var(--mevi-green-600)" }}
-                  />
-                  <label
-                    htmlFor="remember-me"
-                    className="text-sm"
-                    style={{ color: "var(--mevi-text-secondary)" }}
-                  >
-                    Ghi nhớ đăng nhập
-                  </label>
-                </div>
-
-                <div className="pt-0.5">
-                  <button
-                    type="submit"
-                    className="mevi-btn-primary"
-                    disabled={isLoggingIn}
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      {isLoggingIn ? (
-                        <>
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          Đang đăng nhập...
-                        </>
-                      ) : (
-                        <>
-                          Đăng nhập
-                          <ArrowRight className="h-[18px] w-[18px]" />
-                        </>
-                      )}
-                    </span>
-                  </button>
-                </div>
-
-                <p
-                  className="text-center text-sm"
-                  style={{ color: "var(--mevi-text-secondary)" }}
-                >
-                  Bạn đã có tài khoản chưa?{" "}
-                  <Link
-                    href="/register"
-                    className="font-semibold underline-offset-2 hover:underline"
-                    style={{ color: "var(--mevi-green-700)" }}
-                  >
-                    Đăng ký
-                  </Link>
-                </p>
-
-                <div className="pt-1">
-                  <EcosystemFlowMini />
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        <div className="hidden w-full md:block">
-          <div className="mevi-desktop-shell mx-auto flex w-full max-w-xl flex-col items-center">
-            <div className="mb-4 max-w-2xl text-center lg:mb-6">
-              <div
-                className="opacity-0 animate-fade-in-up delay-100"
-                style={{ animationFillMode: "forwards" }}
-              >
-                <div className="mevi-ecosystem-badge mx-auto mb-3 text-xs py-1">
-                  <Link2 className="w-3.5 h-3.5" />
-                  <span>Mevi Ecosystem</span>
-                </div>
-              </div>
-
-              <h2
-                className="text-balance text-[clamp(1.9rem,3.4vw,2.9rem)] font-extrabold leading-[1.08] tracking-tight opacity-0 animate-fade-in-up delay-200"
-                style={{
-                  color: "var(--mevi-text-primary)",
-                  animationFillMode: "forwards",
-                }}
-              >
-                Nền tảng quản lý
-                <br />
-                <span
-                  className="bg-clip-text text-transparent"
+                  className="text-balance text-[clamp(1.9rem,3.4vw,2.9rem)] font-extrabold leading-[1.08] tracking-tight opacity-0 animate-fade-in-up delay-200"
                   style={{
-                    backgroundImage:
-                      "linear-gradient(135deg, var(--mevi-green-600), var(--mevi-green-800))",
+                    color: "var(--mevi-text-primary)",
+                    animationFillMode: "forwards",
                   }}
                 >
-                  Nông nghiệp thông minh
-                </span>
-              </h2>
+                  Nền tảng quản lý
+                  <br />
+                  <span
+                    className="bg-clip-text text-transparent"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(135deg, var(--mevi-green-600), var(--mevi-green-800))",
+                    }}
+                  >
+                    Nông nghiệp thông minh
+                  </span>
+                </h2>
 
-              <EcosystemFlowMini />
-            </div>
-
-            <div
-              className="mevi-login-card mevi-desktop-card w-full max-w-[22rem] p-5 opacity-0 animate-fade-in-scale delay-300 md:p-6"
-              style={{ animationFillMode: "forwards" }}
-            >
-              <div className="mb-5 text-center sm:mb-6">
-                <div className="mb-3 inline-flex items-center justify-center animate-float">
-                  <img
-                    src="/mevi-logo.jpeg"
-                    alt="MEVI Logo"
-                    className="h-9 w-9 rounded-xl object-contain shadow-sm"
-                    style={{ border: "1px solid var(--mevi-border)" }}
-                  />
-                </div>
-                <h3
-                  className="text-base font-bold"
-                  style={{ color: "var(--mevi-text-primary)" }}
-                >
-                  Chào mừng trở lại!
-                </h3>
-                <p
-                  className="mt-0.5 text-xs"
-                  style={{ color: "var(--mevi-text-muted)" }}
-                >
-                  Đăng nhập vào hệ thống MEVI
-                </p>
+                <EcosystemFlowMini />
               </div>
 
-              <form onSubmit={handleLogin} className="space-y-3.5">
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="login-email-tablet"
-                    className="block text-sm font-medium"
-                    style={{ color: "var(--mevi-text-secondary)" }}
-                  >
-                    Email / Số điện thoại
-                  </label>
-                  <div className="relative">
-                    <Mail
-                      className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
-                      style={{ color: "var(--mevi-text-muted)" }}
-                    />
-                    <input
-                      id="login-email-tablet"
-                      type="text"
-                      className="mevi-input"
-                      style={{ paddingLeft: "44px" }}
-                      placeholder="nguyenvana@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      autoComplete="email"
+              <div
+                className="mevi-login-card mevi-desktop-card w-full max-w-[22rem] p-5 opacity-0 animate-fade-in-scale delay-300 md:p-6"
+                style={{ animationFillMode: "forwards" }}
+              >
+                <div className="mb-5 text-center sm:mb-6">
+                  <div className="mb-3 inline-flex items-center justify-center animate-float">
+                    <img
+                      src="/mevi-logo.jpeg"
+                      alt="MEVI Logo"
+                      className="h-9 w-9 rounded-xl object-contain shadow-sm"
+                      style={{ border: "1px solid var(--mevi-border)" }}
                     />
                   </div>
+                  <h3
+                    className="text-base font-bold"
+                    style={{ color: "var(--mevi-text-primary)" }}
+                  >
+                    Chào mừng trở lại!
+                  </h3>
+                  <p
+                    className="mt-0.5 text-xs"
+                    style={{ color: "var(--mevi-text-muted)" }}
+                  >
+                    Đăng nhập vào hệ thống MEVI
+                  </p>
                 </div>
 
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
+                <form onSubmit={handleLogin} className="space-y-3.5">
+                  <div className="space-y-1.5">
                     <label
-                      htmlFor="login-password-tablet"
+                      htmlFor="login-email-tablet"
                       className="block text-sm font-medium"
                       style={{ color: "var(--mevi-text-secondary)" }}
                     >
-                      Mật khẩu
+                      Email / Số điện thoại
                     </label>
-                    <button
-                      type="button"
-                      className="text-xs font-medium hover:underline"
-                      style={{ color: "var(--mevi-green-600)" }}
+                    <div className="relative">
+                      <Mail
+                        className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
+                        style={{ color: "var(--mevi-text-muted)" }}
+                      />
+                      <input
+                        id="login-email-tablet"
+                        type="text"
+                        className="mevi-input"
+                        style={{ paddingLeft: "44px" }}
+                        placeholder="nguyenvana@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="login-password-tablet"
+                        className="block text-sm font-medium"
+                        style={{ color: "var(--mevi-text-secondary)" }}
+                      >
+                        Mật khẩu
+                      </label>
+                      <button
+                        type="button"
+                        className="text-xs font-medium hover:underline"
+                        style={{ color: "var(--mevi-green-600)" }}
+                      >
+                        Quên mật khẩu?
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <Lock
+                        className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
+                        style={{ color: "var(--mevi-text-muted)" }}
+                      />
+                      <input
+                        id="login-password-tablet"
+                        type="password"
+                        className="mevi-input"
+                        style={{ paddingLeft: "44px" }}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      id="remember-me-tablet"
+                      type="checkbox"
+                      className="h-4 w-4 rounded"
+                      style={{ accentColor: "var(--mevi-green-600)" }}
+                    />
+                    <label
+                      htmlFor="remember-me-tablet"
+                      className="text-sm"
+                      style={{ color: "var(--mevi-text-secondary)" }}
                     >
-                      Quên mật khẩu?
+                      Ghi nhớ đăng nhập
+                    </label>
+                  </div>
+
+                  <div className="pt-1">
+                    <button
+                      type="submit"
+                      className="mevi-btn-primary"
+                      disabled={isLoggingIn}
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        {isLoggingIn ? (
+                          <>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            Đang đăng nhập...
+                          </>
+                        ) : (
+                          <>
+                            Đăng nhập
+                            <ArrowRight className="h-[18px] w-[18px]" />
+                          </>
+                        )}
+                      </span>
                     </button>
                   </div>
-                  <div className="relative">
-                    <Lock
-                      className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
-                      style={{ color: "var(--mevi-text-muted)" }}
-                    />
-                    <input
-                      id="login-password-tablet"
-                      type="password"
-                      className="mevi-input"
-                      style={{ paddingLeft: "44px" }}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      autoComplete="current-password"
-                    />
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2 pt-1">
-                  <input
-                    id="remember-me-tablet"
-                    type="checkbox"
-                    className="h-4 w-4 rounded"
-                    style={{ accentColor: "var(--mevi-green-600)" }}
-                  />
-                  <label
-                    htmlFor="remember-me-tablet"
-                    className="text-sm"
+                  <p
+                    className="text-center text-sm"
                     style={{ color: "var(--mevi-text-secondary)" }}
                   >
-                    Ghi nhớ đăng nhập
-                  </label>
-                </div>
-
-                <div className="pt-1">
-                  <button
-                    type="submit"
-                    className="mevi-btn-primary"
-                    disabled={isLoggingIn}
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      {isLoggingIn ? (
-                        <>
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          Đang đăng nhập...
-                        </>
-                      ) : (
-                        <>
-                          Đăng nhập
-                          <ArrowRight className="h-[18px] w-[18px]" />
-                        </>
-                      )}
-                    </span>
-                  </button>
-                </div>
-
-                <p
-                  className="text-center text-sm"
-                  style={{ color: "var(--mevi-text-secondary)" }}
-                >
-                  Bạn đã có tài khoản chưa?{" "}
-                  <Link
-                    href="/register"
-                    className="font-semibold underline-offset-2 hover:underline"
-                    style={{ color: "var(--mevi-green-700)" }}
-                  >
-                    Đăng ký
-                  </Link>
-                </p>
-              </form>
+                    Bạn đã có tài khoản chưa?{" "}
+                    <Link
+                      href="/register"
+                      className="font-semibold underline-offset-2 hover:underline"
+                      style={{ color: "var(--mevi-green-700)" }}
+                    >
+                      Đăng ký
+                    </Link>
+                  </p>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
         </main>
       </div>
 

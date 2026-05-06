@@ -1,4 +1,7 @@
-import { type SurveyAnswerValue, type SurveyOption } from "@/lib/survey";
+import {
+  type SurveyAnswerValue,
+  type SurveyOption,
+} from "@/features/survey/api";
 
 export function optionIsSelected(
   value: SurveyAnswerValue,
