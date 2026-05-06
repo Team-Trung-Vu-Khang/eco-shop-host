@@ -11,9 +11,21 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { SurveyBranchConfirmModal } from "@/app/survey/_components/survey-branch-confirm-modal";
 import { MeviPortalFooter } from "@/components/mevi-portal-footer";
 import { MeviPortalHeader } from "@/components/mevi-portal-header";
+import {
+  DEFAULT_SURVEY_LOOKUP_VALUE,
+  SURVEY_META,
+} from "@/features/survey/constants/survey.constants";
+import { fetchSurveyDetail } from "@/features/survey/api";
+import type {
+  SurveyLookupType,
+  SurveyRequestType,
+} from "@/features/survey/api";
+import { getStoredLookupType } from "@/features/survey/utils/survey-flow";
 
 /* ===== Module Data ===== */
 
@@ -66,7 +78,11 @@ const modules = [
     status: "Đang phát triển",
     dotColor: "bg-purple-400",
   },
-];
+] as const;
+
+type ModuleItem = (typeof modules)[number];
+type BranchSurveyType = Extract<SurveyRequestType, "farm" | "factory" | "shop">;
+type BranchModule = Extract<ModuleItem, { id: BranchSurveyType }>;
 
 /* ===== Decorative Leaves ===== */
 
@@ -104,8 +120,11 @@ function DecorativeLeaves() {
 /* ===== Dashboard Page ===== */
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [loadingModuleId, setLoadingModuleId] = useState<string | null>(null);
+  const [pendingSurveyModule, setPendingSurveyModule] =
+    useState<BranchModule | null>(null);
 
   useEffect(() => {
     if (!toastMessage) return;
@@ -117,32 +136,123 @@ export default function DashboardPage() {
     return () => window.clearTimeout(timer);
   }, [toastMessage]);
 
+  const openModule = (mod: ModuleItem) => {
+    if (mod.id === "factory" || mod.id === "shop") {
+      setLoadingModuleId(null);
+      setToastMessage(
+        `${mod.name} đang được hoàn thiện. Khi sẵn sàng, MEVI sẽ thông báo để bà con vào sử dụng thuận tiện hơn.`,
+      );
+      return;
+    }
+
+    setToastMessage(null);
+    setLoadingModuleId(mod.id);
+
+    const targetHref = mod.href;
+    window.setTimeout(() => {
+      window.open(targetHref, "_blank", "noopener,noreferrer");
+
+      setLoadingModuleId(null);
+    }, 2000);
+  };
+
+  const getSurveyLookup = () => {
+    const storedValue =
+      window.sessionStorage.getItem("mevi_user_identifier") ??
+      window.sessionStorage.getItem("mevi_user_email") ??
+      DEFAULT_SURVEY_LOOKUP_VALUE;
+    const lookupType = getStoredLookupType(storedValue);
+
+    return {
+      type: lookupType,
+      value: storedValue,
+      companyId: window.sessionStorage.getItem("mevi_company_id"),
+      userId: window.sessionStorage.getItem("mevi_user_id"),
+    };
+  };
+
+  const goToBranchSurvey = (mod: BranchModule) => {
+    const lookup = getSurveyLookup();
+    const surveyParams = new URLSearchParams({
+      surveyType: mod.id,
+      source: "module",
+      returnTo: "/dashboard",
+      [lookup.type]: lookup.value,
+    });
+
+    if (lookup.companyId) {
+      surveyParams.set("companyId", lookup.companyId);
+    }
+
+    if (lookup.userId) {
+      surveyParams.set("userId", lookup.userId);
+    }
+
+    router.push(`/survey?${surveyParams.toString()}`);
+  };
+
+  const shouldCheckSurvey = (mod: ModuleItem): mod is BranchModule =>
+    mod.id === "farm" || mod.id === "factory" || mod.id === "shop";
+
   const handleModuleClick =
-    (mod: (typeof modules)[number]) =>
-    (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (mod.id === "factory" || mod.id === "shop") {
-        e.preventDefault();
-        setLoadingModuleId(null);
-        setToastMessage(
-          `${mod.name} đang được hoàn thiện. Khi sẵn sàng, MEVI sẽ thông báo để bà con vào sử dụng thuận tiện hơn.`,
-        );
+    (mod: ModuleItem) => async (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      setToastMessage(null);
+
+      if (!shouldCheckSurvey(mod)) {
+        openModule(mod);
         return;
       }
 
-      e.preventDefault();
-      setToastMessage(null);
       setLoadingModuleId(mod.id);
+      const lookup = getSurveyLookup();
 
-      const targetHref = mod.href;
-      window.setTimeout(() => {
-        window.open(targetHref, "_blank", "noopener,noreferrer");
+      try {
+        const surveyDetail = await fetchSurveyDetail(
+          mod.id,
+          lookup.value,
+          lookup.type as SurveyLookupType,
+          {
+            companyId: lookup.companyId,
+            userId: lookup.type === "userId" ? lookup.value : lookup.userId,
+          },
+        );
 
         setLoadingModuleId(null);
-      }, 2000);
+
+        if (
+          surveyDetail &&
+          surveyDetail.status !== "submitted" &&
+          !surveyDetail.submittedAt
+        ) {
+          setPendingSurveyModule(mod);
+          return;
+        }
+
+        openModule(mod);
+      } catch (error) {
+        setLoadingModuleId(null);
+        setToastMessage(
+          error instanceof Error
+            ? error.message
+            : "Không kiểm tra được trạng thái khảo sát. Vui lòng thử lại.",
+        );
+      }
     };
 
   return (
     <div className="mevi-portal relative flex h-dvh flex-col overflow-hidden">
+      {pendingSurveyModule && (
+        <SurveyBranchConfirmModal
+          surveyName={SURVEY_META[pendingSurveyModule.id].name}
+          onCancel={() => setPendingSurveyModule(null)}
+          onConfirm={() => {
+            goToBranchSurvey(pendingSurveyModule);
+            setPendingSurveyModule(null);
+          }}
+        />
+      )}
+
       {loadingModuleId && (
         <div className="fixed inset-0 z-[120] flex flex-col items-center justify-center gap-4 bg-white/80 backdrop-blur-sm">
           <div
