@@ -181,6 +181,14 @@ export function SurveyPageContent() {
   const surveyLoadFeedback =
     surveyLoadError instanceof Error ? surveyLoadError.message : null;
   const visibleFeedback = submitFeedback ?? surveyLoadFeedback;
+  const hasSubmittedSurvey = selectedSurveyKeys.some((surveyKey) => {
+    const surveyDetail = apiSurveyDetails[surveyKey];
+
+    return Boolean(
+      surveyDetail &&
+        (surveyDetail.status === "submitted" || surveyDetail.submittedAt),
+    );
+  });
 
   const apiQuestions: SurveyQuestionWithMeta[] = selectedSurveyKeys.flatMap(
     (surveyKey) => {
@@ -207,6 +215,12 @@ export function SurveyPageContent() {
   const currentSurvey = SURVEY_META[currentQuestion?.surveyKey ?? "general"];
   const SurveyIcon = currentSurvey.icon;
   const portalTitle = currentSurvey.name;
+
+  useEffect(() => {
+    if (isLoadingSurveys || !hasSubmittedSurvey) return;
+
+    router.replace("/dashboard");
+  }, [hasSubmittedSurvey, isLoadingSurveys, router]);
 
   useEffect(() => {
     if (!showSuccessModal || !completionTarget) return;
@@ -418,6 +432,10 @@ export function SurveyPageContent() {
   );
   const isLastQuestion = effectiveIndex === wizardQuestions.length - 1;
   const nextDisabled = submitMutation.isPending || isLoadingSurveys;
+
+  if (hasSubmittedSurvey) {
+    return null;
+  }
 
   return (
     <div className="mevi-portal relative flex h-dvh flex-col overflow-hidden">
