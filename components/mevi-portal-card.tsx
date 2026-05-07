@@ -70,7 +70,7 @@ export function MeviPortalCard({
               SĐT: 08.1221.3836
             </p>
             <a
-              href="https://mevi.edtexco.vn"
+              href="https://mevi-edu.otechz.com/"
               target="_blank"
               rel="noreferrer"
               className="inline-flex whitespace-nowrap no-underline transition-colors hover:underline sm:inline-flex"

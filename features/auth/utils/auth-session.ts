@@ -21,3 +21,7 @@ export function clearStoredAuthSession() {
 export function getStoredAccessToken() {
   return window.sessionStorage.getItem(TOKEN_STORAGE_KEY);
 }
+
+export function getStoredUserName() {
+  return window.sessionStorage.getItem("mevi_user_name");
+}

@@ -223,6 +223,12 @@ export function SurveyPageContent() {
   }, [hasSubmittedSurvey, isLoadingSurveys, router]);
 
   useEffect(() => {
+    if (isLoadingSurveys || !surveyLoadError) return;
+
+    router.replace("/dashboard");
+  }, [isLoadingSurveys, router, surveyLoadError]);
+
+  useEffect(() => {
     if (!showSuccessModal || !completionTarget) return;
 
     const timer = window.setTimeout(() => {
@@ -433,7 +439,7 @@ export function SurveyPageContent() {
   const isLastQuestion = effectiveIndex === wizardQuestions.length - 1;
   const nextDisabled = submitMutation.isPending || isLoadingSurveys;
 
-  if (hasSubmittedSurvey) {
+  if (hasSubmittedSurvey || surveyLoadError) {
     return null;
   }
 

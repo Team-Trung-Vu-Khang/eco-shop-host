@@ -15,10 +15,11 @@ import { useEffect, useState } from "react";
 import { SurveyBranchConfirmModal } from "@/app/survey/_components/survey-branch-confirm-modal";
 import { MeviPortalFooter } from "@/components/mevi-portal-footer";
 import { MeviPortalHeader } from "@/components/mevi-portal-header";
-import { useLogoutMutation } from "@/features/auth/hooks";
+import { useAuthMeQuery, useLogoutMutation } from "@/features/auth/hooks";
 import {
   clearStoredAuthSession,
   getStoredAccessToken,
+  getStoredUserName,
 } from "@/features/auth/utils";
 import {
   DEFAULT_SURVEY_LOOKUP_VALUE,
@@ -42,7 +43,7 @@ const modules = [
       "Hệ thống giáo dục trực tuyến, tài liệu kỹ thuật canh tác, hướng dẫn sử dụng phân bón và quy trình sản xuất.",
     icon: BookOpen,
     variant: "edu" as const,
-    href: "https://mevi.edtexco.vn",
+    href: "https://mevi-edu.otechz.com/",
     status: "Hoạt động",
     dotColor: "bg-blue-400",
   },
@@ -88,6 +89,42 @@ type ModuleItem = (typeof modules)[number];
 type BranchSurveyType = Extract<SurveyRequestType, "farm" | "factory" | "shop">;
 type BranchModule = Extract<ModuleItem, { id: BranchSurveyType }>;
 
+function getDisplayName(
+  profile: {
+    name?: string | null;
+    email?: string | null;
+    userId?: string | null;
+  },
+  fallback?: string | null,
+) {
+  return (
+    profile.name?.trim() ||
+    profile.email?.trim() ||
+    fallback?.trim() ||
+    profile.userId?.trim() ||
+    "Tài khoản MEVI"
+  );
+}
+
+function getUserInitials(displayName: string) {
+  const normalizedName = displayName.trim();
+  const emailName = normalizedName.includes("@")
+    ? normalizedName.split("@")[0]
+    : normalizedName;
+  const words = emailName
+    .split(/\s+/)
+    .map((word) => word.replace(/[^a-zA-ZÀ-ỹ0-9]/g, ""))
+    .filter(Boolean);
+
+  if (!words.length) return "ME";
+
+  if (words.length === 1) {
+    return words[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
+}
+
 /* ===== Decorative Leaves ===== */
 
 function DecorativeLeaves() {
@@ -125,6 +162,13 @@ function DecorativeLeaves() {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [accessToken] = useState(() =>
+    typeof window === "undefined" ? null : getStoredAccessToken(),
+  );
+  const [storedUserName] = useState(() =>
+    typeof window === "undefined" ? null : getStoredUserName(),
+  );
+  const authMeQuery = useAuthMeQuery(accessToken);
   const logoutMutation = useLogoutMutation();
   const surveyDetailMutation = useSurveyDetailMutation();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -132,6 +176,8 @@ export default function DashboardPage() {
   const [pendingSurveyModule, setPendingSurveyModule] =
     useState<BranchModule | null>(null);
   const isLoggingOut = logoutMutation.isPending;
+  const displayName = getDisplayName(authMeQuery.data ?? {}, storedUserName);
+  const userInitials = getUserInitials(displayName);
 
   useEffect(() => {
     if (!toastMessage) return;
@@ -391,9 +437,13 @@ export default function DashboardPage() {
                       "linear-gradient(135deg, var(--mevi-green-500), var(--mevi-green-700))",
                   }}
                 >
-                  NV
+                  {authMeQuery.isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    userInitials
+                  )}
                 </div>
-                <span className="truncate font-medium">Nguyễn Văn A</span>
+                <span className="truncate font-medium">{displayName}</span>
               </div>
               <button
                 type="button"
