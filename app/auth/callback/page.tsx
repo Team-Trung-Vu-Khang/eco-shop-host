@@ -15,8 +15,13 @@ import {
   getStoredAccessToken,
 } from "@/features/auth/utils";
 import { DEFAULT_SURVEY_LOOKUP_VALUE } from "@/features/survey/constants/survey.constants";
+import {
+  fetchSurveyDetail,
+  type SurveyLookupType,
+  type SurveyRequestContext,
+  type SurveyResultDetails,
+} from "@/features/survey/api";
 
-type SurveyLookupType = "phone" | "email" | "code" | "userId";
 type JwtPayload = Record<string, unknown>;
 
 const SSO_PROVIDER = "center";
@@ -105,6 +110,27 @@ function buildSurveyUrl(lookup: { type: SurveyLookupType; value: string }) {
   return `/survey?${surveyParams.toString()}`;
 }
 
+function getStoredSurveyContext(lookup: {
+  type: SurveyLookupType;
+  value: string;
+}): SurveyRequestContext {
+  const companyId = window.sessionStorage.getItem("mevi_company_id");
+  const userId = window.sessionStorage.getItem("mevi_user_id");
+
+  return {
+    companyId,
+    userId: lookup.type === "userId" ? lookup.value : userId,
+  };
+}
+
+function hasPendingSurvey(surveyDetail: SurveyResultDetails | null) {
+  return Boolean(
+    surveyDetail &&
+      surveyDetail.status !== "submitted" &&
+      !surveyDetail.submittedAt,
+  );
+}
+
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -182,7 +208,24 @@ function AuthCallbackContent() {
 
         if (userId) window.sessionStorage.setItem("mevi_user_id", userId);
 
-        router.replace(buildSurveyUrl(lookup));
+        try {
+          const surveyDetail = await fetchSurveyDetail(
+            "general",
+            lookup.value,
+            lookup.type,
+            getStoredSurveyContext(lookup),
+          );
+
+          if (!isActive || isExitRequestedRef.current) return;
+
+          router.replace(
+            hasPendingSurvey(surveyDetail) ? buildSurveyUrl(lookup) : "/dashboard",
+          );
+        } catch {
+          if (!isActive || isExitRequestedRef.current) return;
+
+          router.replace("/dashboard");
+        }
       } catch (error) {
         if (!isActive || isExitRequestedRef.current) return;
 
