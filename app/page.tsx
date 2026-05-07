@@ -8,15 +8,25 @@ import {
   Factory,
   Link2,
   Loader2,
-  Lock,
-  Mail,
   ShieldCheck,
   ShoppingBag,
   Sprout,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+const SSO_API_BASE =
+  process.env.NEXT_PUBLIC_MEVI_AUTH_API_BASE ?? "http://api-be-mevi.otechz.com";
+const SSO_PROVIDER = "center";
+
+function buildSsoLoginUrl(origin: string) {
+  const callbackUrl = new URL("/auth/callback", origin);
+  const loginUrl = new URL(`/auth/login/${SSO_PROVIDER}`, SSO_API_BASE);
+
+  loginUrl.searchParams.set("callback_url", callbackUrl.toString());
+
+  return loginUrl.toString();
+}
 
 /* ===== Module Quick Access Data ===== */
 
@@ -121,36 +131,17 @@ function EcosystemFlowMini() {
 /* ===== Login Page ===== */
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("0315624919");
-  const [password, setPassword] = useState("Admin1234!");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
-    setTimeout(() => {
-      const loginIdentifier = email.trim();
-      const lookupType = loginIdentifier.includes("@") ? "email" : "phone";
 
+    try {
+      window.location.assign(buildSsoLoginUrl(window.location.origin));
+    } catch {
       setIsLoggingIn(false);
-      window.sessionStorage.setItem("mevi_user_identifier", loginIdentifier);
-      window.sessionStorage.setItem("mevi_user_lookup_type", lookupType);
-      window.sessionStorage.setItem("mevi_user_email", loginIdentifier);
-      window.sessionStorage.setItem(
-        "mevi_user_name",
-        "Tài khoản quản trị MEVI",
-      );
-      const surveyParams = new URLSearchParams({
-        surveyType: "general",
-        source: "login",
-        returnTo: "/dashboard",
-        type: lookupType,
-        [lookupType]: loginIdentifier,
-      });
-
-      router.push(`/survey?${surveyParams.toString()}`);
-    }, 1200);
+    }
   };
 
   return (
@@ -203,83 +194,6 @@ export default function LoginPage() {
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-3">
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="login-email"
-                      className="block text-sm font-medium"
-                      style={{ color: "var(--mevi-text-secondary)" }}
-                    >
-                      Email / Số điện thoại
-                    </label>
-                    <div className="relative">
-                      <Mail
-                        className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
-                        style={{ color: "var(--mevi-text-muted)" }}
-                      />
-                      <input
-                        id="login-email"
-                        type="text"
-                        className="mevi-input"
-                        style={{ paddingLeft: "44px" }}
-                        placeholder="nguyenvana@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        autoComplete="email"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-3">
-                      <label
-                        htmlFor="login-password"
-                        className="block text-sm font-medium"
-                        style={{ color: "var(--mevi-text-secondary)" }}
-                      >
-                        Mật khẩu
-                      </label>
-                      <button
-                        type="button"
-                        className="text-xs font-medium hover:underline"
-                        style={{ color: "var(--mevi-green-600)" }}
-                      >
-                        Quên mật khẩu?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <Lock
-                        className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
-                        style={{ color: "var(--mevi-text-muted)" }}
-                      />
-                      <input
-                        id="login-password"
-                        type="password"
-                        className="mevi-input"
-                        style={{ paddingLeft: "44px" }}
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        autoComplete="current-password"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-0.5">
-                    <input
-                      id="remember-me"
-                      type="checkbox"
-                      className="h-4 w-4 rounded"
-                      style={{ accentColor: "var(--mevi-green-600)" }}
-                    />
-                    <label
-                      htmlFor="remember-me"
-                      className="text-sm"
-                      style={{ color: "var(--mevi-text-secondary)" }}
-                    >
-                      Ghi nhớ đăng nhập
-                    </label>
-                  </div>
-
                   <div className="pt-0.5">
                     <button
                       type="submit"
@@ -290,11 +204,11 @@ export default function LoginPage() {
                         {isLoggingIn ? (
                           <>
                             <Loader2 className="h-5 w-5 animate-spin" />
-                            Đang đăng nhập...
+                            Đang truy cập...
                           </>
                         ) : (
                           <>
-                            Đăng nhập
+                            Truy cập
                             <ArrowRight className="h-[18px] w-[18px]" />
                           </>
                         )}
@@ -388,83 +302,6 @@ export default function LoginPage() {
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-3.5">
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="login-email-tablet"
-                      className="block text-sm font-medium"
-                      style={{ color: "var(--mevi-text-secondary)" }}
-                    >
-                      Email / Số điện thoại
-                    </label>
-                    <div className="relative">
-                      <Mail
-                        className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
-                        style={{ color: "var(--mevi-text-muted)" }}
-                      />
-                      <input
-                        id="login-email-tablet"
-                        type="text"
-                        className="mevi-input"
-                        style={{ paddingLeft: "44px" }}
-                        placeholder="nguyenvana@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        autoComplete="email"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <label
-                        htmlFor="login-password-tablet"
-                        className="block text-sm font-medium"
-                        style={{ color: "var(--mevi-text-secondary)" }}
-                      >
-                        Mật khẩu
-                      </label>
-                      <button
-                        type="button"
-                        className="text-xs font-medium hover:underline"
-                        style={{ color: "var(--mevi-green-600)" }}
-                      >
-                        Quên mật khẩu?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <Lock
-                        className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2"
-                        style={{ color: "var(--mevi-text-muted)" }}
-                      />
-                      <input
-                        id="login-password-tablet"
-                        type="password"
-                        className="mevi-input"
-                        style={{ paddingLeft: "44px" }}
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        autoComplete="current-password"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-1">
-                    <input
-                      id="remember-me-tablet"
-                      type="checkbox"
-                      className="h-4 w-4 rounded"
-                      style={{ accentColor: "var(--mevi-green-600)" }}
-                    />
-                    <label
-                      htmlFor="remember-me-tablet"
-                      className="text-sm"
-                      style={{ color: "var(--mevi-text-secondary)" }}
-                    >
-                      Ghi nhớ đăng nhập
-                    </label>
-                  </div>
-
                   <div className="pt-1">
                     <button
                       type="submit"
@@ -475,11 +312,11 @@ export default function LoginPage() {
                         {isLoggingIn ? (
                           <>
                             <Loader2 className="h-5 w-5 animate-spin" />
-                            Đang đăng nhập...
+                            Đang truy cập...
                           </>
                         ) : (
                           <>
-                            Đăng nhập
+                            Truy cập
                             <ArrowRight className="h-[18px] w-[18px]" />
                           </>
                         )}
