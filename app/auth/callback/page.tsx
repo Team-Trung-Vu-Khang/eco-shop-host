@@ -9,10 +9,10 @@ import { DecorativeLeaves } from "@/app/survey/_components/decorative-leaves";
 import type { AuthMeProfile } from "@/features/auth/api";
 import { useAuthMeMutation, useLogoutMutation } from "@/features/auth/hooks";
 import {
-  TOKEN_STORAGE_KEY,
   USER_PROFILE_STORAGE_KEY,
   clearStoredAuthSession,
   getStoredAccessToken,
+  setStoredAccessToken,
 } from "@/features/auth/utils";
 import { DEFAULT_SURVEY_LOOKUP_VALUE } from "@/features/survey/constants/survey.constants";
 import {
@@ -153,7 +153,7 @@ function AuthCallbackContent() {
     async function syncAuthenticatedUser() {
       try {
         clearStoredAuthSession();
-        window.sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+        setStoredAccessToken(token);
 
         const payload = decodeJwtPayload(token);
         const profile = await getCurrentUser(token);
@@ -263,16 +263,11 @@ function AuthCallbackContent() {
       if (logoutToken) {
         await logoutSession(logoutToken);
       }
-
+    } catch {
+      // Local exit should still complete even when the remote logout fails.
+    } finally {
       clearStoredAuthSession();
       router.replace("/");
-    } catch (error) {
-      clearStoredAuthSession();
-      setCallbackError(
-        error instanceof Error
-          ? error.message
-          : "Không thể thoát phiên đăng nhập.",
-      );
     }
   };
 

@@ -25,6 +25,10 @@ export function buildLogoutUrl() {
   return new URL("/auth/logout", AUTH_API_BASE).toString();
 }
 
+export function buildRefreshUrl() {
+  return new URL("/auth/refresh", AUTH_API_BASE).toString();
+}
+
 export function buildChangePasswordUrl() {
   return new URL("/auth/change-password", AUTH_API_BASE).toString();
 }
@@ -111,6 +115,37 @@ function getApiErrorMessage(payload: unknown) {
   return message;
 }
 
+function getAccessTokenFromPayload(payload: unknown): string | null {
+  if (typeof payload === "string" && payload.trim()) {
+    return payload.trim();
+  }
+
+  const record = toRecord(normalizeObjectKeys(payload));
+  if (!record) return null;
+
+  for (const key of ["accessToken", "access_token", "token", "jwt"]) {
+    const value = record[key];
+
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return getAccessTokenFromPayload(record.data);
+}
+
+function getAccessTokenFromHeaders(headers: Headers) {
+  const authorization = headers.get("authorization");
+
+  if (authorization?.toLowerCase().startsWith("bearer ")) {
+    return authorization.slice("bearer ".length).trim();
+  }
+
+  const accessToken = headers.get("x-access-token");
+
+  return accessToken?.trim() || null;
+}
+
 function getAuthMeProfile(payload: unknown): AuthMeProfile {
   const normalizedPayload = normalizeObjectKeys(payload);
   const root = toRecord(normalizedPayload);
@@ -180,6 +215,33 @@ export async function logoutMeviSession(token: string) {
 
     throw new Error(message || "Không thể đăng xuất. Vui lòng thử lại.");
   }
+}
+
+export async function refreshAccessToken(token: string) {
+  const response = await fetch(buildRefreshUrl(), {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const message = getApiErrorMessage(payload);
+
+    throw new Error(message || "Phiên đăng nhập đã hết hạn.");
+  }
+
+  const refreshedToken =
+    getAccessTokenFromPayload(payload) ?? getAccessTokenFromHeaders(response.headers);
+
+  if (!refreshedToken) {
+    throw new Error("Không nhận được token mới.");
+  }
+
+  return refreshedToken;
 }
 
 export async function changeCurrentUserPassword({
