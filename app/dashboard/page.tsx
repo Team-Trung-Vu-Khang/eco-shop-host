@@ -8,15 +8,23 @@ import {
   ArrowRight,
   LogOut,
   Loader2,
+  LockKeyhole,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { SurveyBranchConfirmModal } from "@/app/survey/_components/survey-branch-confirm-modal";
 import { MeviPortalFooter } from "@/components/mevi-portal-footer";
 import { MeviPortalHeader } from "@/components/mevi-portal-header";
-import { useAuthMeQuery, useLogoutMutation } from "@/features/auth/hooks";
 import {
+  useAuthMeQuery,
+  useChangePasswordMutation,
+  useLogoutMutation,
+} from "@/features/auth/hooks";
+import {
+  USER_PROFILE_STORAGE_KEY,
   clearStoredAuthSession,
   getStoredAccessToken,
   getStoredUserName,
@@ -88,6 +96,10 @@ const modules = [
 type ModuleItem = (typeof modules)[number];
 type BranchSurveyType = Extract<SurveyRequestType, "farm" | "factory" | "shop">;
 type BranchModule = Extract<ModuleItem, { id: BranchSurveyType }>;
+type ChangePasswordFormValues = {
+  newPassword: string;
+  confirmPassword: string;
+};
 
 function getDisplayName(
   profile: {
@@ -169,15 +181,37 @@ export default function DashboardPage() {
     typeof window === "undefined" ? null : getStoredUserName(),
   );
   const authMeQuery = useAuthMeQuery(accessToken);
+  const changePasswordMutation = useChangePasswordMutation();
   const logoutMutation = useLogoutMutation();
   const surveyDetailMutation = useSurveyDetailMutation();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [passwordChangeError, setPasswordChangeError] = useState<string | null>(
+    null,
+  );
   const [loadingModuleId, setLoadingModuleId] = useState<string | null>(null);
   const [pendingSurveyModule, setPendingSurveyModule] =
     useState<BranchModule | null>(null);
   const isLoggingOut = logoutMutation.isPending;
+  const isChangingPassword = changePasswordMutation.isPending;
+  const mustChangePassword = Boolean(authMeQuery.data?.mustChangePassword);
   const displayName = getDisplayName(authMeQuery.data ?? {}, storedUserName);
   const userInitials = getUserInitials(displayName);
+  const {
+    register: registerPasswordField,
+    handleSubmit: handlePasswordSubmit,
+    reset: resetPasswordForm,
+    control: passwordFormControl,
+    formState: { errors: passwordErrors },
+  } = useForm<ChangePasswordFormValues>({
+    defaultValues: {
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+  const newPasswordValue = useWatch({
+    control: passwordFormControl,
+    name: "newPassword",
+  }) ?? "";
 
   useEffect(() => {
     if (!toastMessage) return;
@@ -269,6 +303,43 @@ export default function DashboardPage() {
       );
     }
   };
+
+  const onChangePasswordSubmit = handlePasswordSubmit(async (values) => {
+    setPasswordChangeError(null);
+    setToastMessage(null);
+
+    if (!accessToken) {
+      setPasswordChangeError("Không tìm thấy token đăng nhập.");
+      return;
+    }
+
+    try {
+      await changePasswordMutation.mutateAsync({
+        token: accessToken,
+        payload: {
+          newPassword: values.newPassword,
+          confirmPassword: values.confirmPassword,
+        },
+      });
+
+      const refreshedProfile = await authMeQuery.refetch();
+
+      if (refreshedProfile.data) {
+        window.sessionStorage.setItem(
+          USER_PROFILE_STORAGE_KEY,
+          JSON.stringify(refreshedProfile.data),
+        );
+      }
+
+      resetPasswordForm();
+    } catch (error) {
+      setPasswordChangeError(
+        error instanceof Error
+          ? error.message
+          : "Không thể đổi mật khẩu. Vui lòng thử lại.",
+      );
+    }
+  });
 
   const handleModuleClick =
     (mod: ModuleItem) => async (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -468,6 +539,138 @@ export default function DashboardPage() {
 
         {/* Main Content */}
         <main className="flex w-full flex-1 flex-col items-center px-4 pb-10 pt-4 sm:px-6 md:px-8 md:pb-14 md:pt-8">
+          {authMeQuery.isLoading ? (
+            <section className="flex flex-1 flex-col items-center justify-center gap-3">
+              <Loader2
+                className="h-8 w-8 animate-spin"
+                style={{ color: "var(--mevi-green-700)" }}
+              />
+              <p
+                className="text-sm font-semibold"
+                style={{ color: "var(--mevi-text-secondary)" }}
+              >
+                Đang kiểm tra tài khoản...
+              </p>
+            </section>
+          ) : mustChangePassword ? (
+            <section className="mevi-login-card mx-auto flex w-full max-w-md flex-col rounded-[24px] p-5 opacity-0 animate-fade-in-up sm:p-6">
+              <div className="mb-5 flex items-start gap-3">
+                <div
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, var(--mevi-green-50), var(--mevi-green-100))",
+                    color: "var(--mevi-green-700)",
+                  }}
+                >
+                  <LockKeyhole className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <h2
+                    className="text-lg font-bold"
+                    style={{ color: "var(--mevi-text-primary)" }}
+                  >
+                    Đổi mật khẩu
+                  </h2>
+                  <p
+                    className="mt-1 text-sm leading-6"
+                    style={{ color: "var(--mevi-text-secondary)" }}
+                  >
+                    Vui lòng cập nhật mật khẩu trước khi tiếp tục sử dụng hệ
+                    sinh thái MEVI.
+                  </p>
+                </div>
+              </div>
+
+              <form
+                onSubmit={onChangePasswordSubmit}
+                className="flex flex-col gap-3"
+              >
+                <div className="space-y-1">
+                  <label
+                    htmlFor="newPassword"
+                    className="flex items-center gap-2 text-sm font-semibold"
+                    style={{ color: "var(--mevi-text-secondary)" }}
+                  >
+                    <ShieldCheck className="h-4 w-4" />
+                    Mật khẩu mới
+                  </label>
+                  <input
+                    id="newPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    className="mevi-input"
+                    {...registerPasswordField("newPassword", {
+                      required: "Vui lòng nhập mật khẩu mới.",
+                      minLength: {
+                        value: 6,
+                        message: "Mật khẩu cần có ít nhất 6 ký tự.",
+                      },
+                    })}
+                  />
+                  {passwordErrors.newPassword?.message ? (
+                    <p className="text-xs text-red-600">
+                      {passwordErrors.newPassword.message}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="space-y-1">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="flex items-center gap-2 text-sm font-semibold"
+                    style={{ color: "var(--mevi-text-secondary)" }}
+                  >
+                    <ShieldCheck className="h-4 w-4" />
+                    Xác nhận mật khẩu
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    className="mevi-input"
+                    {...registerPasswordField("confirmPassword", {
+                      required: "Vui lòng xác nhận mật khẩu.",
+                      validate: (value) =>
+                        value === newPasswordValue ||
+                        "Mật khẩu xác nhận không khớp.",
+                    })}
+                  />
+                  {passwordErrors.confirmPassword?.message ? (
+                    <p className="text-xs text-red-600">
+                      {passwordErrors.confirmPassword.message}
+                    </p>
+                  ) : null}
+                </div>
+
+                {passwordChangeError ? (
+                  <div className="rounded-xl border border-red-200 bg-red-50/90 p-3">
+                    <p className="text-sm font-semibold text-red-700">
+                      {passwordChangeError}
+                    </p>
+                  </div>
+                ) : null}
+
+                <button
+                  type="submit"
+                  className="mevi-btn-primary mt-1 h-11 rounded-xl text-sm"
+                  disabled={isChangingPassword}
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    {isChangingPassword ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        Đang cập nhật...
+                      </>
+                    ) : (
+                      "Cập nhật mật khẩu"
+                    )}
+                  </span>
+                </button>
+              </form>
+            </section>
+          ) : (
+            <>
           {/* Section Header */}
           <div
             className="mb-8 text-center opacity-0 animate-fade-in-up delay-100 md:mb-10"
@@ -611,6 +814,8 @@ export default function DashboardPage() {
               );
             })}
           </div>
+            </>
+          )}
         </main>
       </div>
 

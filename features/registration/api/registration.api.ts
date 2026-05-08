@@ -1,0 +1,82 @@
+import { AUTH_API_BASE } from "@/features/auth/api";
+
+export const REGISTRATION_API_BASE =
+  process.env.NEXT_PUBLIC_MEVI_REGISTRATION_API_BASE ?? AUTH_API_BASE;
+
+export const REGISTRATION_AUDIENCE_TYPES = [
+  "individual",
+  "cooperative",
+  "business",
+  "other",
+] as const;
+
+export type RegistrationAudienceType =
+  (typeof REGISTRATION_AUDIENCE_TYPES)[number];
+
+export type RegistrationProfileRequest = {
+  fullName: string;
+  phoneNumber: string;
+  birthYear: number;
+  operatingArea: string;
+  audienceType: RegistrationAudienceType;
+  audienceTypeOther?: string;
+};
+
+function buildRegistrationUrl() {
+  return new URL("/api/registrations", REGISTRATION_API_BASE).toString();
+}
+
+function normalizeObjectKeys<T>(input: T): T {
+  if (Array.isArray(input)) {
+    return input.map((item) => normalizeObjectKeys(item)) as T;
+  }
+
+  if (input && typeof input === "object") {
+    return Object.fromEntries(
+      Object.entries(input).map(([key, value]) => [
+        key.endsWith(":") ? key.slice(0, -1) : key,
+        normalizeObjectKeys(value),
+      ]),
+    ) as T;
+  }
+
+  return input;
+}
+
+function getApiErrorMessage(payload: unknown) {
+  const normalizedPayload = normalizeObjectKeys(payload);
+
+  if (!normalizedPayload || typeof normalizedPayload !== "object") {
+    return null;
+  }
+
+  const record = normalizedPayload as Record<string, unknown>;
+  const message = record.message ?? record.error;
+
+  return typeof message === "string" && message.trim()
+    ? message.trim()
+    : null;
+}
+
+export async function submitRegistrationProfile(
+  payload: RegistrationProfileRequest,
+) {
+  const response = await fetch(buildRegistrationUrl(), {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+  const responsePayload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const message = getApiErrorMessage(responsePayload);
+
+    throw new Error(message || "Không thể gửi đăng ký. Vui lòng thử lại.");
+  }
+
+  return normalizeObjectKeys(responsePayload);
+}

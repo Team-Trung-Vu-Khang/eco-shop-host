@@ -9,6 +9,12 @@ export type AuthMeProfile = {
   provider?: string | null;
   sessionId?: string | null;
   companyId?: string | number | null;
+  mustChangePassword?: boolean | null;
+};
+
+export type ChangePasswordPayload = {
+  newPassword: string;
+  confirmPassword: string;
 };
 
 export function buildAuthMeUrl() {
@@ -17,6 +23,10 @@ export function buildAuthMeUrl() {
 
 export function buildLogoutUrl() {
   return new URL("/auth/logout", AUTH_API_BASE).toString();
+}
+
+export function buildChangePasswordUrl() {
+  return new URL("/auth/change-password", AUTH_API_BASE).toString();
 }
 
 function normalizeObjectKeys<T>(input: T): T {
@@ -60,6 +70,39 @@ function getStringClaim(payload: Record<string, unknown> | null, keys: string[])
   return null;
 }
 
+function getBooleanClaim(
+  payload: Record<string, unknown> | null,
+  keys: string[],
+) {
+  if (!payload) return null;
+
+  for (const key of keys) {
+    const value = payload[key];
+
+    if (typeof value === "boolean") {
+      return value;
+    }
+
+    if (typeof value === "string") {
+      const normalizedValue = value.trim().toLowerCase();
+
+      if (normalizedValue === "true" || normalizedValue === "1") {
+        return true;
+      }
+
+      if (normalizedValue === "false" || normalizedValue === "0") {
+        return false;
+      }
+    }
+
+    if (typeof value === "number") {
+      return value === 1;
+    }
+  }
+
+  return null;
+}
+
 function getApiErrorMessage(payload: unknown) {
   const normalizedPayload = normalizeObjectKeys(payload);
   const record = toRecord(normalizedPayload);
@@ -92,6 +135,10 @@ function getAuthMeProfile(payload: unknown): AuthMeProfile {
       "company_id",
       "tenantId",
       "tenant_id",
+    ]),
+    mustChangePassword: getBooleanClaim(profile, [
+      "mustChangePassword",
+      "must_change_password",
     ]),
   };
 }
@@ -132,5 +179,31 @@ export async function logoutMeviSession(token: string) {
     const message = getApiErrorMessage(payload);
 
     throw new Error(message || "Không thể đăng xuất. Vui lòng thử lại.");
+  }
+}
+
+export async function changeCurrentUserPassword({
+  token,
+  payload,
+}: {
+  token: string;
+  payload: ChangePasswordPayload;
+}) {
+  const response = await fetch(buildChangePasswordUrl(), {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const responsePayload = await response.json().catch(() => null);
+    const message = getApiErrorMessage(responsePayload);
+
+    throw new Error(message || "Không thể đổi mật khẩu. Vui lòng thử lại.");
   }
 }

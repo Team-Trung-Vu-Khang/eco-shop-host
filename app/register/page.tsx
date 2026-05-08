@@ -11,24 +11,43 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { MeviPortalFooter } from "@/components/mevi-portal-footer";
 import { MeviPortalHeader } from "@/components/mevi-portal-header";
+import type {
+  RegistrationAudienceType,
+  RegistrationProfileRequest,
+} from "@/features/registration/api";
+import { useRegistrationMutation } from "@/features/registration/hooks";
 
-const audienceOptions = [
-  "A. Cá nhân/Hộ nông dân.",
-  "B. Tổ hợp tác/Hợp tác xã.",
-  "C. Doanh nghiệp/Cơ sở sản xuất.",
-  "D. Khác (Sinh viên, người yêu nông nghiệp...).",
+const audienceOptions: Array<{
+  value: RegistrationAudienceType;
+  label: string;
+}> = [
+  { value: "individual", label: "A. Cá nhân/Hộ nông dân." },
+  { value: "cooperative", label: "B. Tổ hợp tác/Hợp tác xã." },
+  { value: "business", label: "C. Doanh nghiệp/Cơ sở sản xuất." },
+  {
+    value: "other",
+    label: "D. Khác (Sinh viên, người yêu nông nghiệp...).",
+  },
 ];
 
 type RegistrationFormValues = {
   fullName: string;
-  phone: string;
+  phoneNumber: string;
   birthYear: string;
-  city: string;
-  audienceGroups: string[];
+  operatingArea: string;
+  audienceType: RegistrationAudienceType | "";
+  audienceTypeOther: string;
 };
+
+function getAudienceTypeLabel(audienceType: RegistrationAudienceType) {
+  return (
+    audienceOptions.find((option) => option.value === audienceType)?.label ??
+    audienceType
+  );
+}
 
 function DecorativeLeaves() {
   return (
@@ -70,34 +89,59 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export default function RegistrationPage() {
-  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
   const [submittedData, setSubmittedData] =
-    useState<RegistrationFormValues | null>(null);
+    useState<RegistrationProfileRequest | null>(null);
+  const registrationMutation = useRegistrationMutation();
 
   const currentYear = new Date().getFullYear();
   const {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<RegistrationFormValues>({
     defaultValues: {
       fullName: "",
-      phone: "",
+      phoneNumber: "",
       birthYear: "",
-      city: "",
-      audienceGroups: [],
+      operatingArea: "",
+      audienceType: "",
+      audienceTypeOther: "",
     },
   });
 
-  const onSubmit = handleSubmit((values) => {
-    setIsSubmittingForm(true);
+  const selectedAudienceType = useWatch({
+    control,
+    name: "audienceType",
+  });
+  const isSubmittingForm = registrationMutation.isPending;
+  const submittedAudienceLabel = submittedData
+    ? submittedData.audienceType === "other" && submittedData.audienceTypeOther
+      ? submittedData.audienceTypeOther
+      : getAudienceTypeLabel(submittedData.audienceType)
+    : "";
 
-    window.setTimeout(() => {
-      setSubmittedData(values);
-      setIsSubmittingForm(false);
+  const onSubmit = handleSubmit(async (values) => {
+    const payload: RegistrationProfileRequest = {
+      fullName: values.fullName.trim(),
+      phoneNumber: values.phoneNumber.trim(),
+      birthYear: Number(values.birthYear),
+      operatingArea: values.operatingArea.trim(),
+      audienceType: values.audienceType as RegistrationAudienceType,
+    };
+
+    if (payload.audienceType === "other") {
+      payload.audienceTypeOther = values.audienceTypeOther.trim();
+    }
+
+    try {
+      await registrationMutation.mutateAsync(payload);
+      setSubmittedData(payload);
       reset();
-    }, 900);
+    } catch {
+      setSubmittedData(null);
+    }
   });
 
   return (
@@ -247,6 +291,10 @@ export default function RegistrationPage() {
                     placeholder="Nguyễn Văn A"
                     {...register("fullName", {
                       required: "Vui lòng nhập họ và tên.",
+                      maxLength: {
+                        value: 255,
+                        message: "Họ và tên tối đa 255 ký tự.",
+                      },
                     })}
                   />
                   <FieldError message={errors.fullName?.message} />
@@ -254,7 +302,7 @@ export default function RegistrationPage() {
 
                 <div className="space-y-1">
                   <label
-                    htmlFor="phone"
+                    htmlFor="phoneNumber"
                     className="flex items-center gap-2 text-xs font-semibold sm:text-sm"
                     style={{ color: "var(--mevi-text-secondary)" }}
                   >
@@ -262,20 +310,24 @@ export default function RegistrationPage() {
                     2. Số điện thoại
                   </label>
                   <input
-                    id="phone"
+                    id="phoneNumber"
                     type="tel"
                     inputMode="numeric"
                     className="mevi-input"
                     placeholder="09xxxxxxxx"
-                    {...register("phone", {
+                    {...register("phoneNumber", {
                       required: "Vui lòng nhập số điện thoại.",
+                      maxLength: {
+                        value: 32,
+                        message: "Số điện thoại tối đa 32 ký tự.",
+                      },
                       pattern: {
-                        value: /^(0|\+84)\d{9,10}$/,
+                        value: /^(?:\+84|0)(3|5|7|8|9)\d{8}$/,
                         message: "Số điện thoại chưa đúng định dạng.",
                       },
                     })}
                   />
-                  <FieldError message={errors.phone?.message} />
+                  <FieldError message={errors.phoneNumber?.message} />
                 </div>
 
                 <div className="space-y-1">
@@ -299,8 +351,11 @@ export default function RegistrationPage() {
                         if (!Number.isInteger(year)) {
                           return "Năm sinh không hợp lệ.";
                         }
-                        if (year < 1940 || year > currentYear) {
-                          return `Năm sinh cần nằm trong khoảng 1940 - ${currentYear}.`;
+                        if (year < 1900 || year > 2100) {
+                          return "Năm sinh cần nằm trong khoảng 1900 - 2100.";
+                        }
+                        if (year > currentYear) {
+                          return `Năm sinh không được lớn hơn ${currentYear}.`;
                         }
                         return true;
                       },
@@ -311,7 +366,7 @@ export default function RegistrationPage() {
 
                 <div className="space-y-1">
                   <label
-                    htmlFor="city"
+                    htmlFor="operatingArea"
                     className="flex items-center gap-2 text-xs font-semibold sm:text-sm"
                     style={{ color: "var(--mevi-text-secondary)" }}
                   >
@@ -319,15 +374,19 @@ export default function RegistrationPage() {
                     4. Địa chỉ khu vực bạn đang hoạt động (Tỉnh/Thành phố)
                   </label>
                   <input
-                    id="city"
+                    id="operatingArea"
                     type="text"
                     className="mevi-input"
                     placeholder="Ví dụ: Đắk Lắk, Cần Thơ, Hà Nội"
-                    {...register("city", {
+                    {...register("operatingArea", {
                       required: "Vui lòng nhập tỉnh/thành phố.",
+                      maxLength: {
+                        value: 150,
+                        message: "Khu vực hoạt động tối đa 150 ký tự.",
+                      },
                     })}
                   />
-                  <FieldError message={errors.city?.message} />
+                  <FieldError message={errors.operatingArea?.message} />
                 </div>
 
                 <div className="space-y-1.5">
@@ -341,27 +400,71 @@ export default function RegistrationPage() {
                   <div className="grid gap-1.5 rounded-xl border border-[var(--mevi-border)] bg-white/60 p-2.5">
                     {audienceOptions.map((option) => (
                       <label
-                        key={option}
+                        key={option.value}
                         className="flex cursor-pointer items-start gap-2 rounded-lg px-1 py-0.5"
                         style={{ color: "var(--mevi-text-primary)" }}
                       >
                         <input
-                          type="checkbox"
-                          value={option}
-                          className="mt-0.5 h-4 w-4 rounded"
+                          type="radio"
+                          value={option.value}
+                          className="mt-0.5 h-4 w-4"
                           style={{ accentColor: "var(--mevi-green-600)" }}
-                          {...register("audienceGroups", {
-                            validate: (value) =>
-                              value.length > 0 ||
-                              "Vui lòng chọn ít nhất một nhóm đối tượng.",
+                          {...register("audienceType", {
+                            required: "Vui lòng chọn một nhóm đối tượng.",
                           })}
                         />
-                        <span className="text-xs leading-5">{option}</span>
+                        <span className="text-xs leading-5">
+                          {option.label}
+                        </span>
                       </label>
                     ))}
                   </div>
-                  <FieldError message={errors.audienceGroups?.message} />
+                  <FieldError message={errors.audienceType?.message} />
                 </div>
+
+                {selectedAudienceType === "other" ? (
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="audienceTypeOther"
+                      className="flex items-center gap-2 text-xs font-semibold sm:text-sm"
+                      style={{ color: "var(--mevi-text-secondary)" }}
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Vui lòng mô tả nhóm đối tượng khác
+                    </label>
+                    <input
+                      id="audienceTypeOther"
+                      type="text"
+                      className="mevi-input"
+                      placeholder="Ví dụ: Sinh viên, người yêu nông nghiệp..."
+                      {...register("audienceTypeOther", {
+                        validate: (value, formValues) => {
+                          if (
+                            formValues.audienceType === "other" &&
+                            !value.trim()
+                          ) {
+                            return "Vui lòng nhập nhóm đối tượng khác.";
+                          }
+
+                          return true;
+                        },
+                        maxLength: {
+                          value: 255,
+                          message: "Nội dung tối đa 255 ký tự.",
+                        },
+                      })}
+                    />
+                    <FieldError message={errors.audienceTypeOther?.message} />
+                  </div>
+                ) : null}
+
+                {registrationMutation.isError ? (
+                  <div className="rounded-xl border border-red-200 bg-red-50/90 p-2.5">
+                    <p className="text-xs font-semibold text-red-700 sm:text-sm">
+                      {registrationMutation.error.message}
+                    </p>
+                  </div>
+                ) : null}
               </div>
 
               <button
@@ -388,18 +491,18 @@ export default function RegistrationPage() {
                   Đăng ký thành công cho {submittedData.fullName}
                 </p>
                 <p className="mt-1 text-xs text-emerald-700 sm:text-sm md:hidden">
-                  SĐT: {submittedData.phone} · Năm sinh:{" "}
+                  SĐT: {submittedData.phoneNumber} · Năm sinh:{" "}
                   {submittedData.birthYear}
                 </p>
                 <p className="mt-1 text-xs text-emerald-700 sm:text-sm md:hidden">
-                  Khu vực: {submittedData.city}
+                  Khu vực: {submittedData.operatingArea}
                 </p>
                 <p className="mt-1 text-xs text-emerald-700 sm:text-sm md:hidden">
-                  Nhóm đối tượng: {submittedData.audienceGroups.join(", ")}
+                  Nhóm đối tượng: {submittedAudienceLabel}
                 </p>
                 <p className="mt-1 hidden text-xs text-emerald-700 md:block">
-                  {submittedData.phone} · {submittedData.city} ·{" "}
-                  {submittedData.audienceGroups.length} nhóm đối tượng đã chọn
+                  {submittedData.phoneNumber} · {submittedData.operatingArea} ·{" "}
+                  {submittedAudienceLabel}
                 </p>
               </div>
             ) : null}

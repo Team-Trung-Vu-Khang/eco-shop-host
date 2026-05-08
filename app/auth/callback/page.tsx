@@ -208,6 +208,11 @@ function AuthCallbackContent() {
 
         if (userId) window.sessionStorage.setItem("mevi_user_id", userId);
 
+        if (profile.mustChangePassword) {
+          router.replace("/dashboard");
+          return;
+        }
+
         try {
           const surveyDetail = await fetchSurveyDetail(
             "general",
