@@ -4,6 +4,7 @@ export const AUTH_API_BASE =
 
 export type AuthMeProfile = {
   userId?: string | null;
+  phone?: string | null;
   email?: string | null;
   name?: string | null;
   provider?: string | null;
@@ -56,7 +57,10 @@ function toRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function getStringClaim(payload: Record<string, unknown> | null, keys: string[]) {
+function getStringClaim(
+  payload: Record<string, unknown> | null,
+  keys: string[],
+) {
   if (!payload) return null;
 
   for (const key of keys) {
@@ -235,7 +239,8 @@ export async function refreshAccessToken(token: string) {
   }
 
   const refreshedToken =
-    getAccessTokenFromPayload(payload) ?? getAccessTokenFromHeaders(response.headers);
+    getAccessTokenFromPayload(payload) ??
+    getAccessTokenFromHeaders(response.headers);
 
   if (!refreshedToken) {
     throw new Error("Không nhận được token mới.");

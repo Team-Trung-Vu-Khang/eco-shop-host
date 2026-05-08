@@ -17,12 +17,15 @@ import {
 import { DEFAULT_SURVEY_LOOKUP_VALUE } from "@/features/survey/constants/survey.constants";
 import {
   fetchSurveyDetail,
-  type SurveyLookupType,
   type SurveyRequestContext,
   type SurveyResultDetails,
 } from "@/features/survey/api";
 
 type JwtPayload = Record<string, unknown>;
+type PhoneSurveyLookup = {
+  type: "phone";
+  value: string;
+};
 
 const SSO_PROVIDER = "center";
 
@@ -65,34 +68,17 @@ function getStringClaim(payload: JwtPayload | null, keys: string[]) {
 function getSurveyLookup(
   payload: JwtPayload | null,
   profile?: AuthMeProfile,
-): {
-  type: SurveyLookupType;
-  value: string;
-} {
-  const profileUserId = profile?.userId?.trim();
-  if (profileUserId) return { type: "userId", value: profileUserId };
+): PhoneSurveyLookup {
+  const profilePhone = profile?.phone?.trim();
+  if (profilePhone) return { type: "phone", value: profilePhone };
 
-  const profileEmail = profile?.email?.trim();
-  if (profileEmail) return { type: "email", value: profileEmail };
-
-  const phone = getStringClaim(payload, [
-    "phone",
-    "phone_number",
-    "mobile",
-    "mobilePhone",
-  ]);
+  const phone = getStringClaim(payload, ["phone"]);
   if (phone) return { type: "phone", value: phone };
-
-  const email = getStringClaim(payload, ["email", "mail"]);
-  if (email) return { type: "email", value: email };
-
-  const userId = getStringClaim(payload, ["userId", "user_id", "sub", "id"]);
-  if (userId) return { type: "userId", value: userId };
 
   return { type: "phone", value: DEFAULT_SURVEY_LOOKUP_VALUE };
 }
 
-function buildSurveyUrl(lookup: { type: SurveyLookupType; value: string }) {
+function buildSurveyUrl(lookup: PhoneSurveyLookup) {
   const surveyParams = new URLSearchParams({
     surveyType: "general",
     source: "login",
@@ -110,24 +96,21 @@ function buildSurveyUrl(lookup: { type: SurveyLookupType; value: string }) {
   return `/survey?${surveyParams.toString()}`;
 }
 
-function getStoredSurveyContext(lookup: {
-  type: SurveyLookupType;
-  value: string;
-}): SurveyRequestContext {
+function getStoredSurveyContext(): SurveyRequestContext {
   const companyId = window.sessionStorage.getItem("mevi_company_id");
   const userId = window.sessionStorage.getItem("mevi_user_id");
 
   return {
     companyId,
-    userId: lookup.type === "userId" ? lookup.value : userId,
+    userId,
   };
 }
 
 function hasPendingSurvey(surveyDetail: SurveyResultDetails | null) {
   return Boolean(
     surveyDetail &&
-      surveyDetail.status !== "submitted" &&
-      !surveyDetail.submittedAt,
+    surveyDetail.status !== "submitted" &&
+    !surveyDetail.submittedAt,
   );
 }
 
@@ -158,30 +141,11 @@ function AuthCallbackContent() {
         const payload = decodeJwtPayload(token);
         const profile = await getCurrentUser(token);
         const lookup = getSurveyLookup(payload, profile);
-        const email =
-          profile.email ?? getStringClaim(payload, ["email", "mail"]);
-        const name =
-          profile.name ??
-          getStringClaim(payload, [
-            "name",
-            "fullName",
-            "full_name",
-            "preferred_username",
-          ]);
-        const provider = profile.provider ?? SSO_PROVIDER;
-        const companyId =
-          profile.companyId ??
-          getStringClaim(payload, [
-            "companyId",
-            "company_id",
-            "tenantId",
-            "tenant_id",
-          ]);
-        const userId =
-          profile.userId ??
-          (lookup.type === "userId"
-            ? lookup.value
-            : getStringClaim(payload, ["userId", "user_id", "sub", "id"]));
+        const email = profile?.email || "";
+        const name = profile?.name || "";
+        const provider = profile?.provider || SSO_PROVIDER;
+        const companyId = profile?.companyId || "";
+        const userId = profile?.userId || "";
 
         if (!isActive || isExitRequestedRef.current) return;
 
@@ -192,10 +156,10 @@ function AuthCallbackContent() {
         window.sessionStorage.setItem("mevi_sso_provider", provider);
         window.sessionStorage.setItem("mevi_user_identifier", lookup.value);
         window.sessionStorage.setItem("mevi_user_lookup_type", lookup.type);
-        window.sessionStorage.setItem("mevi_user_email", email ?? lookup.value);
+        window.sessionStorage.setItem("mevi_user_email", email || lookup.value);
         window.sessionStorage.setItem(
           "mevi_user_name",
-          name ?? "Tài khoản quản trị MEVI",
+          name || "Tài khoản quản trị MEVI",
         );
 
         if (profile.sessionId) {
@@ -218,13 +182,15 @@ function AuthCallbackContent() {
             "general",
             lookup.value,
             lookup.type,
-            getStoredSurveyContext(lookup),
+            getStoredSurveyContext(),
           );
 
           if (!isActive || isExitRequestedRef.current) return;
 
           router.replace(
-            hasPendingSurvey(surveyDetail) ? buildSurveyUrl(lookup) : "/dashboard",
+            hasPendingSurvey(surveyDetail)
+              ? buildSurveyUrl(lookup)
+              : "/dashboard",
           );
         } catch {
           if (!isActive || isExitRequestedRef.current) return;
