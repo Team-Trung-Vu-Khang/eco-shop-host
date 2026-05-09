@@ -9,6 +9,11 @@ import { DecorativeLeaves } from "./decorative-leaves";
 import { SurveyPortalHeader } from "./survey-portal-header";
 import { SurveySuccessModal } from "./survey-success-modal";
 
+import { useLogoutMutation } from "@/features/auth/hooks";
+import {
+  clearStoredAuthSession,
+  getStoredAccessToken,
+} from "@/features/auth/utils";
 import {
   DEFAULT_SURVEY_LOOKUP_VALUE,
   QUESTION_TYPE_LABELS,
@@ -139,6 +144,8 @@ export function SurveyPageContent() {
     ],
     [selectedBranchSurveyType],
   );
+  const logoutMutation = useLogoutMutation();
+  const isLoggingOut = logoutMutation.isPending;
 
   const surveyQueries = useQueries({
     queries: selectedSurveyKeys.map((surveyKey) => ({
@@ -425,6 +432,23 @@ export function SurveyPageContent() {
     router.push(returnTo);
   };
 
+  const handleExit = async () => {
+    if (isLoggingOut) return;
+
+    const token = getStoredAccessToken();
+
+    try {
+      if (token) {
+        await logoutMutation.mutateAsync(token);
+      }
+    } catch {
+      // Local exit should still complete even when the remote logout fails.
+    } finally {
+      clearStoredAuthSession();
+      router.replace("/");
+    }
+  };
+
   const currentQuestionClass =
     transitionDirection === "next"
       ? "animate-slide-in-right"
@@ -445,7 +469,12 @@ export function SurveyPageContent() {
     <div className="mevi-portal relative flex h-dvh flex-col overflow-hidden">
       <DecorativeLeaves />
       <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto pb-28 sm:pb-32">
-        <SurveyPortalHeader title={portalTitle} accent={currentSurvey.accent} />
+        <SurveyPortalHeader
+          title={portalTitle}
+          accent={currentSurvey.accent}
+          isExiting={isLoggingOut}
+          onExit={handleExit}
+        />
 
         {showSuccessModal && (
           <SurveySuccessModal
