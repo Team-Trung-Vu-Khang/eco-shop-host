@@ -312,15 +312,25 @@ export default function DashboardPage() {
     setToastMessage(null);
 
     const token = getStoredAccessToken();
+    let didLogoutRemote = false;
+    let logoutUrl: string | null | undefined;
 
     try {
       if (token) {
-        await logoutMutation.mutateAsync(token);
+        const logoutResult = await logoutMutation.mutateAsync(token);
+        didLogoutRemote = true;
+        logoutUrl = logoutResult.logoutUrl;
       }
     } catch {
       // Local logout should still complete even when the remote logout fails.
     } finally {
       clearStoredAuthSession();
+
+      if (didLogoutRemote && logoutUrl) {
+        window.location.href = logoutUrl;
+        return;
+      }
+
       router.replace("/");
     }
   };

@@ -254,15 +254,25 @@ function AuthCallbackContent() {
 
     const storedToken = getStoredAccessToken();
     const logoutToken = token || storedToken;
+    let didLogoutRemote = false;
+    let logoutUrl: string | null | undefined;
 
     try {
       if (logoutToken) {
-        await logoutSession(logoutToken);
+        const logoutResult = await logoutSession(logoutToken);
+        didLogoutRemote = true;
+        logoutUrl = logoutResult.logoutUrl;
       }
     } catch {
       // Local exit should still complete even when the remote logout fails.
     } finally {
       clearStoredAuthSession();
+
+      if (didLogoutRemote && logoutUrl) {
+        window.location.href = logoutUrl;
+        return;
+      }
+
       router.replace("/");
     }
   };
@@ -271,7 +281,7 @@ function AuthCallbackContent() {
     ? "Xác thực chưa hoàn tất"
     : mustChangePassword
       ? "Đổi mật khẩu"
-      : "Đang xác thực tài khoản MEVI Farm...";
+      : "Đang kiểm tra thông tin...";
 
   return (
     <AuthCallbackShell
@@ -310,7 +320,10 @@ function AuthCallbackContent() {
             </div>
           </div>
 
-          <form onSubmit={onChangePasswordSubmit} className="flex flex-col gap-3">
+          <form
+            onSubmit={onChangePasswordSubmit}
+            className="flex flex-col gap-3"
+          >
             <div className="space-y-1">
               <label
                 htmlFor="callbackNewPassword"
@@ -500,10 +513,7 @@ export default function AuthCallbackPage() {
   return (
     <Suspense
       fallback={
-        <AuthCallbackShell
-          feedback="Đang xác thực tài khoản MEVI Farm..."
-          error={null}
-        />
+        <AuthCallbackShell feedback="Đang kiểm tra thông tin..." error={null} />
       }
     >
       <AuthCallbackContent />

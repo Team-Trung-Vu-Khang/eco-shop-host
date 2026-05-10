@@ -18,6 +18,11 @@ export type ChangePasswordPayload = {
   confirmPassword: string;
 };
 
+export type LogoutMeviSessionResponse = {
+  message?: string | null;
+  logoutUrl?: string | null;
+};
+
 export function buildAuthMeUrl() {
   return new URL("/auth/me", AUTH_API_BASE).toString();
 }
@@ -171,7 +176,9 @@ export async function fetchCurrentAuthUser(
   return payload;
 }
 
-export async function logoutMeviSession(token: string) {
+export async function logoutMeviSession(
+  token: string,
+): Promise<LogoutMeviSessionResponse> {
   const response = await fetch(buildLogoutUrl(), {
     method: "POST",
     headers: {
@@ -180,13 +187,21 @@ export async function logoutMeviSession(token: string) {
     },
     cache: "no-store",
   });
+  const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const payload = await response.json().catch(() => null);
     const message = getApiErrorMessage(payload);
 
     throw new Error(message || "Không thể đăng xuất. Vui lòng thử lại.");
   }
+
+  const record = toRecord(normalizeObjectKeys(payload));
+
+  return {
+    message: typeof record?.message === "string" ? record.message : null,
+    logoutUrl:
+      typeof record?.logoutUrl === "string" ? record.logoutUrl.trim() : null,
+  };
 }
 
 export async function refreshAccessToken(token: string) {
